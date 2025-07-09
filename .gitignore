@@ -1,0 +1,26 @@
+# IDE files
+.idea/
+.vscode/
+
+# Build directories
+/TasteTrails_backend/.gradle
+build/
+target/
+out/
+.gradle/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Logs
+logs/
+log/
+
+# Node.js
+node_modules/
+
+# Security
+secrets/
+
+# Testing
+coverage/
+test-results/
