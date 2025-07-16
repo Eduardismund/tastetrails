@@ -59,3 +59,8 @@ class QlooService:
                 }
         except Exception as e:
             return {"success": False, "error": str(e), "recommendations": {}}
+
+
+qloo_service = QlooService()
+
+__all__ = ['QlooService', 'qloo_service']

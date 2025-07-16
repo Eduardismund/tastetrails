@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from app.models.user_preferences import UserPreferences
 
 
-class TravelRecommendationsRequest(BaseModel):
+class TasteTrailsRequest(BaseModel):
     user_preferences: UserPreferences
-    limit: Optional[int]
+    city: Optional[str]
+    days: Optional[int]

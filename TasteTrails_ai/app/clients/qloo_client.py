@@ -1,7 +1,5 @@
-import anthropic
-from typing import Dict, Any, List, Optional
-import json
 import logging
+from typing import Dict, Any, List
 import httpx
 
 from app.config import settings
@@ -80,7 +78,7 @@ class QlooClient:
                 "total": len(unique_recommendations)
             }
         except Exception as e:
-            logger.error(f"❌ Recommendations failed: {str(e)}")
+            logger.error(f"Recommendations failed: {str(e)}")
             return {
                 "success": False,
                 "error": str(e),
@@ -139,11 +137,11 @@ class QlooClient:
                 external_data = item.get("properties", {}).get("external", {})
 
                 recommendations.append({
-                    "name": item.get("name", "")
+                    "name": item.get("name", ""),
                     # "qloo_id": item.get("entity_id", ""),
                     # "score": affinity_score,  # ← Fixed: now gets real affinity score
                     # "popularity": popularity,
-                    # "genres": genres # ← Fixed: now extracts genres from tags
+                    "genres": genres # ← Fixed: now extracts genres from tags
                     # "image_url": image_url,
                     # "external_links": {
                     #     "spotify": external_data.get("spotify", {}).get("id", ""),
@@ -159,7 +157,6 @@ class QlooClient:
     def remove_duplicate_entities(entities: List[Dict[str, Any]], input_items: List[str]) -> List[Dict[str, Any]]:
         """Remove duplicate entities based on name and filter out input items"""
 
-        # Convert input items to lowercase for comparison
         input_names_lower = {item.lower().strip() for item in input_items}
         seen = set()
         unique = []
@@ -167,13 +164,11 @@ class QlooClient:
         for entity in entities:
             name = entity.get("name", "").lower().strip()
 
-            # Skip if name is empty, already seen, or matches input items
             if not name or name in seen or name in input_names_lower:
                 continue
 
             seen.add(name)
             unique.append(entity)
 
-        # Sort by score (highest first)
         unique.sort(key=lambda x: x.get("score", 0.0), reverse=True)
         return unique
