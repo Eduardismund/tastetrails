@@ -1,27 +1,14 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware  # Fixed: Use fastapi import
+from fastapi import HTTPException, APIRouter
 
 from app.models.travel_recommendation import TravelRecommendationsRequest
 from app.services.qloo_service import QlooService
 
+router = APIRouter()
+
 qloo_service = QlooService()
 
-app = FastAPI(title="TasteTrails AI")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_headers=["*"],
-    allow_methods=["*"]
-)
-
-
-@app.get("/")
-def health_check():
-    return {"service": "TasteTrails AI", "status": "running"}
-
-
-@app.post("/api/qloo/recommendations")
+@router.post("/qloo/recommendations")
 async def get_recommendations(request: TravelRecommendationsRequest):
     try:
         preference_dict = {
