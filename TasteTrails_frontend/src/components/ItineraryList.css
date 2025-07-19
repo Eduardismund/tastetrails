@@ -1,0 +1,162 @@
+/* Itinerary List Component Styles */
+
+/* === LIST CONTAINER === */
+.itinerary-list-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.itinerary-list-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.itinerary-list-header h4 {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+/* === LIST ITEMS === */
+.itinerary-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.itinerary-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.itinerary-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.itinerary-item.selected {
+    background: rgba(255, 107, 71, 0.2);
+    border-color: rgba(255, 107, 71, 0.4);
+    box-shadow: var(--shadow);
+}
+
+.itinerary-item.selected:hover {
+    background: rgba(255, 107, 71, 0.25);
+}
+
+/* === ITEM CONTENT === */
+.itinerary-destination {
+    display: flex;
+    align-items: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.location-icon {
+    color: rgba(255, 107, 71, 0.8);
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.itinerary-dates {
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+.date-icon {
+    color: rgba(255, 255, 255, 0.6);
+    margin-right: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.activity-count {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+/* === EMPTY STATE === */
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.empty-state p {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state small {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+    .itinerary-list-header {
+        padding: 1rem;
+    }
+
+    .itinerary-list-header h4 {
+        font-size: 1.1rem;
+    }
+
+    .itinerary-list {
+        padding: 0.75rem;
+    }
+
+    .itinerary-item {
+        padding: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .itinerary-destination {
+        font-size: 0.95rem;
+    }
+}
+
+/* === SCROLLBAR STYLING === */
+.itinerary-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.itinerary-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.itinerary-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.itinerary-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
