@@ -1,0 +1,40 @@
+.authenticate-container {
+    max-width: 350px;
+    width: 100%;
+    text-align: center;
+}
+
+
+/* === FOOTER LINK === */
+.auth-footer {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.auth-footer p {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.auth-link {
+    background: none;
+    border: none;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: all 0.3s ease;
+    font-size: inherit;
+}
+
+.auth-link:hover {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+}
+
