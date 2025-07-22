@@ -1,3 +1,6 @@
+/* Dashboard Component Specific Styles */
+
+/* === DASHBOARD CONTAINER === */
 .dashboard-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -72,56 +75,4 @@
 
 .info-item span {
     color: rgba(255, 255, 255, 0.8);
-}
-
-/* === LOADING & ERROR STATES === */
-.loading-container,
-.error-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem;
-}
-
-.loading-text,
-.error-message {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 2rem 3rem;
-    color: white;
-    font-size: 1.2rem;
-    margin-bottom: 2rem;
-}
-
-.error-message {
-    background: rgba(255, 59, 48, 0.15);
-    border-color: rgba(255, 59, 48, 0.3);
-    color: #ffb3b3;
-}
-
-.retry-btn {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 50px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.retry-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-/* === ANIMATIONS === */
-@keyframes gradientShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
 }
