@@ -1,30 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faLocationDot, faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import './ItineraryDetails.css';
-
-
-interface ActivityOption {
-    id: string;
-    name: string;
-    activity: string;
-    location: string;
-    cultural_score: number;
-}
-
-interface ActivityOptionsProps {
-    options: ActivityOption[];
-    itineraryId: string;
-    selectedTheme: string;
-    timeSlot: {
-        start_time: string;
-        end_time: string;
-        date: string;
-    };
-    onActivityAdded: () => void;
-    onError: (error: string) => void;
-    onClearOptions: () => void;
-}
+import { faStar, faLocationDot} from "@fortawesome/free-solid-svg-icons";
+import type {ActivityOption, ActivityOptionsProps} from "../types/interfaces.ts";
 
 const ActivityOptions: React.FC<ActivityOptionsProps> = ({
                                                              options,
@@ -48,10 +25,9 @@ const ActivityOptions: React.FC<ActivityOptionsProps> = ({
 
     const addActivityToItinerary = async (option: ActivityOption) => {
         setIsAddingActivity(true);
-        onError(''); // Clear previous errors
+        onError('');
 
         try {
-            // Validate required fields
             if (!timeSlot.date) {
                 throw new Error('Date is required');
             }
@@ -63,7 +39,8 @@ const ActivityOptions: React.FC<ActivityOptionsProps> = ({
                 endTime: `${timeSlot.date}T${timeSlot.end_time}:00`,
                 activityDate: timeSlot.date,
                 theme: getThemeFromName(selectedTheme),
-                address: option.location
+                address: option.location,
+                reasoning: option.reasoning
             };
 
             console.log('Sending activity request:', activityRequest); // Debug log
@@ -81,7 +58,6 @@ const ActivityOptions: React.FC<ActivityOptionsProps> = ({
                 throw new Error(errorData.message || 'Failed to add activity');
             }
 
-            // Clear options and refresh itinerary
             onClearOptions();
             onActivityAdded();
 
@@ -97,43 +73,34 @@ const ActivityOptions: React.FC<ActivityOptionsProps> = ({
     }
 
     return (
-        <div className="simple-feature-card main-page activity-options">
+        <div className="simple-feature-card activity-options">
             <h4>
-                <FontAwesomeIcon icon={faStar} className="mr-2" />
+                <FontAwesomeIcon icon={faStar} />
                 Choose Your Activity
             </h4>
 
-            <div className="options-grid">
-                {options.map((option) => (
+            <div className="options-row">
+                {options.slice(0, 3).map((option) => (
                     <div key={option.id} className="option-card">
                         <div className="option-header">
                             <h5>{option.name}</h5>
                             <div className="cultural-score">
-                                <FontAwesomeIcon icon={faStar} className="mr-1" />
+                                <FontAwesomeIcon icon={faStar} />
                                 {option.cultural_score}
                             </div>
                         </div>
                         <p className="option-description">{option.activity}</p>
+                        <p className="option-description">{option.reasoning}</p>
                         <div className="option-location">
-                            <FontAwesomeIcon icon={faLocationDot} className="mr-2" />
+                            <FontAwesomeIcon icon={faLocationDot} />
                             {option.location}
                         </div>
                         <button
                             onClick={() => addActivityToItinerary(option)}
                             disabled={isAddingActivity}
-                            className="action-btn option-btn"
+                            className={`submit-btn ${isAddingActivity ? 'loading' : ''}`}
                         >
-                            {isAddingActivity ? (
-                                <>
-                                    <FontAwesomeIcon icon={faSpinner} className="fa-spin mr-2" />
-                                    Adding...
-                                </>
-                            ) : (
-                                <>
-                                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                                    Add to Itinerary
-                                </>
-                            )}
+                            {isAddingActivity ? 'Adding...' : 'Add to Itinerary'}
                         </button>
                     </div>
                 ))}

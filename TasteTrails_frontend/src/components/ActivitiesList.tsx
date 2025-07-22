@@ -9,13 +9,9 @@ import {
     faUtensils,
     faInfoCircle
 } from "@fortawesome/free-solid-svg-icons";
-import type { Activity } from "../types/interfaces";
+import type {ActivitiesListProps} from "../types/interfaces";
 import './ItineraryDetails.css';
 
-
-interface ActivitiesListProps {
-    activities: Activity[];
-}
 
 const ActivitiesList: React.FC<ActivitiesListProps> = ({ activities }) => {
     const getThemeIcon = (theme: string) => {
@@ -37,9 +33,9 @@ const ActivitiesList: React.FC<ActivitiesListProps> = ({ activities }) => {
     };
 
     return (
-        <div className="simple-feature-card main-page activities-section">
+        <div className="simple-feature-card activities-section">
             <h4>
-                <FontAwesomeIcon icon={faClock} className="mr-2" />
+                <FontAwesomeIcon icon={faClock} />
                 Activities ({activities.length})
             </h4>
 
@@ -67,13 +63,14 @@ const ActivitiesList: React.FC<ActivitiesListProps> = ({ activities }) => {
                                 </span>
                             </div>
                             <p className="activity-description">{activity.description}</p>
+                            <p className="activity-description">{activity.reasoning}</p>
                             <div className="activity-details">
                                 <div className="activity-detail">
-                                    <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
-                                    {new Date(activity.activityDate).toLocaleDateString()}
+                                    <FontAwesomeIcon icon={faCalendarAlt} />
+                                    {new Date(activity.activityDate).toLocaleDateString()} from {activity.startTime} to {activity.endTime}
                                 </div>
                                 <div className="activity-detail">
-                                    <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1" />
+                                    <FontAwesomeIcon icon={faMapMarkerAlt} />
                                     {activity.address}
                                 </div>
                             </div>

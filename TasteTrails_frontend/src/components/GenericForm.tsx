@@ -1,6 +1,5 @@
 import {useState} from "react";
 import type {GenericFormProps} from "../types/interfaces.ts";
-import './GenericForm.css'; // Import the CSS file
 
 function GenericForm<T extends Record<string, string>>({
                                                            title,
@@ -46,7 +45,7 @@ function GenericForm<T extends Record<string, string>>({
 
             {error && (
                 <div className="error-message">
-                    {error}
+                    <p>{error}</p>
                 </div>
             )}
 
@@ -72,7 +71,7 @@ function GenericForm<T extends Record<string, string>>({
             <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`action-btn`}
+                className={`submit-btn ${isSubmitting ? 'loading' : ''}`}
             >
                 {isSubmitting ? loadingText : submitButtonText}
             </button>

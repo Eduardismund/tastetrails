@@ -2,15 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
-import type { FormField } from "../types/interfaces.ts";
+import type {FormField, SignInFormData} from "../types/interfaces.ts";
 import GenericForm from "../components/GenericForm.tsx";
 import './AuthenticatePage.css';
-import {useScrollToTop} from "../hooks/useScrollToTop"; // Import the CSS file
-
-interface SignInFormData extends Record<string, string> {
-    email: string;
-    password: string;
-}
+import {useScrollToTop} from "../hooks/useScrollToTop";
 
 const SignInPage: React.FC = () => {
     useScrollToTop();
@@ -62,12 +57,9 @@ const SignInPage: React.FC = () => {
                     <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
                     Back
                 </button>
-                <h1 className="landing-title app">
+                <h1>
                     TasteTrails
-                    <FontAwesomeIcon
-                        icon={faMapLocationDot}
-                        className="ml-3"
-                    />
+                    <FontAwesomeIcon icon={faMapLocationDot} className="ml-3" />
                 </h1>
             </header>
 
