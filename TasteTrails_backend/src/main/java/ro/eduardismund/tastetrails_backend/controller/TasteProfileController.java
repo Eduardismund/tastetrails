@@ -15,7 +15,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/taste-profiles")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@CrossOrigin(origins = {"http://localhost:5173"})
 public class TasteProfileController {
     private final TasteProfileService tasteProfileService;
 
@@ -24,10 +24,9 @@ public class TasteProfileController {
         try{
             final var profile = tasteProfileService.createOrUpdateTasteProfile(
                     userId,
-                    request.getMusicPreferences(),
+                    request.getArtistPreferences(),
                     request.getMoviePreferences(),
-                    request.getFoodPreferences(),
-                    request.getActivityPreferences()
+                    request.getBookPreferences()
             );
 
             final var response = TasteProfileResponse.fromTasteProfile(profile);

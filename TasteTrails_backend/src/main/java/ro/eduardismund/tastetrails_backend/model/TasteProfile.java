@@ -30,16 +30,16 @@ public class TasteProfile {
     private User user;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "music_preferences", columnDefinition="jsonb")
-    private Map<String, Object> musicPreferences;
+    @Column(name = "artist_preferences", columnDefinition="jsonb")
+    private Map<String, Object> artistPreferences;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "movie_preferences", columnDefinition="jsonb")
     private Map<String, Object> moviePreferences;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "food_preferences", columnDefinition="jsonb")
-    private Map<String, Object> foodPreferences;
+    @Column(name = "book_preferences", columnDefinition="jsonb")
+    private Map<String, Object> bookPreferences;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "activity_preferences", columnDefinition="jsonb")

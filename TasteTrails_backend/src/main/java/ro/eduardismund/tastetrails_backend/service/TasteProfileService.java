@@ -3,14 +3,11 @@ package ro.eduardismund.tastetrails_backend.service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ro.eduardismund.tastetrails_backend.model.TasteProfile;
-import ro.eduardismund.tastetrails_backend.model.User;
 import ro.eduardismund.tastetrails_backend.repository.TasteProfileRepository;
 import ro.eduardismund.tastetrails_backend.repository.UserRepository;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,8 +20,7 @@ public class TasteProfileService {
     private final UserRepository userRepository;
     private final TasteProfileRepository tasteProfileRepository;
 
-    public TasteProfile createOrUpdateTasteProfile(UUID userId, Map<String, Object> musicPrefs, Map<String, Object> moviePrefs,
-                                                   Map<String, Object> foodPrefs, Map<String, Object> activityPrefs){
+    public TasteProfile createOrUpdateTasteProfile(UUID userId, Map<String, Object> artistPrefs, Map<String, Object> moviePrefs, Map<String, Object> bookPrefs){
         final var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
@@ -35,10 +31,9 @@ public class TasteProfileService {
                 .user(user)
                 .build());
 
-        profile.setActivityPreferences(activityPrefs);
-        profile.setMusicPreferences(musicPrefs);
+        profile.setArtistPreferences(artistPrefs);
         profile.setMoviePreferences(moviePrefs);
-        profile.setFoodPreferences(foodPrefs);
+        profile.setBookPreferences(bookPrefs);
 
         return tasteProfileRepository.save(profile);
 

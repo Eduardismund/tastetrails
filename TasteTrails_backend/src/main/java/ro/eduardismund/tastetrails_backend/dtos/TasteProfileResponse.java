@@ -13,9 +13,9 @@ import java.util.UUID;
 public class TasteProfileResponse {
     private UUID id;
     private UUID userId;
-    private Map<String, Object> musicPreferences;
+    private Map<String, Object> artistPreferences;
     private Map<String, Object> moviePreferences;
-    private Map<String, Object> foodPreferences;
+    private Map<String, Object> bookPreferences;
     private Map<String, Object> activityPreferences;
     private LocalDateTime updatedAt;
 
@@ -23,9 +23,9 @@ public class TasteProfileResponse {
         return TasteProfileResponse.builder()
                 .id(tasteProfile.getId())
                 .userId(tasteProfile.getUser().getId())
-                .musicPreferences(tasteProfile.getMusicPreferences())
+                .artistPreferences(tasteProfile.getArtistPreferences())
                 .moviePreferences(tasteProfile.getMoviePreferences())
-                .foodPreferences(tasteProfile.getFoodPreferences())
+                .bookPreferences(tasteProfile.getBookPreferences())
                 .activityPreferences(tasteProfile.getActivityPreferences())
                 .updatedAt(tasteProfile.getUpdatedAt())
                 .build();
