@@ -1,4 +1,4 @@
-from fastapi import HTTPException, APIRouter
+from fastapi import HTTPException, APIRouter, Query
 
 from app.models.travel_recommendation import TravelRecommendationsRequest
 from app.services.qloo_service import QlooService
@@ -7,13 +7,27 @@ router = APIRouter()
 
 qloo_service = QlooService()
 
+@router.get("/qloo/search")
+async def get_entity_search(query: str = Query(..., min_length=1, description="Search term for entity"),
+                            limit: int = Query(5, ge=1, le=50, description="Maximum number of results"),
+                            entity_type: str = Query(..., min_length=1, description="Type for the entity")):
+    try:
+        qloo_type= "urn:entity:" + entity_type
+        result = await qloo_service.search_entity(query, qloo_type, limit)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
 
 @router.post("/qloo/recommendations")
 async def get_recommendations(request: TravelRecommendationsRequest):
     try:
         preference_dict = {
             "artists": request.user_preferences.artists,
-            "books": request.user_preferences.books
+            "books": request.user_preferences.books,
+            "movies": request.user_preferences.movies,
         }
 
         preference_dict = {k: v for k, v in preference_dict.items() if v}

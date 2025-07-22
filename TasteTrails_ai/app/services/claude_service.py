@@ -13,27 +13,33 @@ class ClaudeService:
         self.client = claude_client
 
 
-    async def generate_activity(self, cultural_profile, user_preferences, city, start_time, end_time, date, theme):
+    async def generate_activity(self, cultural_profile, user_preferences, city, start_time, end_time, date, theme, existing_activities):
         """Generate a set of proposed activities based on user's preferences"""
         try:
             prompt = f"""
                         Have the mindset of an expert trip advisor for {theme} that knows all the activities and periodic events in the city {city}, between the time period: {start_time} to {end_time} on date {date}.
 
+                        The following activities are already existing: {existing_activities}
                         User's preferences are: {user_preferences}
                         Qloo's recommendations are: {cultural_profile}
 
                         Return only this JSON format:
                         {{
                             "options": [
-                                {{"id": "option_1", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 95}},
-                                {{"id": "option_2", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 92}},
-                                {{"id": "option_3", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 89}}
+                                {{"id": "option_1", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant"}},
+                                {{"id": "option_2", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant"}},
+                                {{"id": "option_3", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant"}}
                             ]
                         }}
 
                         RULES:
                         - The options must be relevant to the user personality reflected through preferences and Qloo recommendations
+                        - The reasoning should be short and clear, not more than a sentence
+                        - Already existing activities should not be considered again
                         - There must be 3 options, each following the same structure but different activities
+                        - Prioritize options that meet multiple preferences criteria
+                        - Search for occasional events on that specific day on EventBride or the internet
+                        - The activity options must be relevant to the time period availability and make sense in the context
                         - Choose the best activity options, based on the personality reflected through preferences from a specific entity or more
                         - Consider meet-ups, periodic events, and anything that can be considered an activity for {theme}
                         """

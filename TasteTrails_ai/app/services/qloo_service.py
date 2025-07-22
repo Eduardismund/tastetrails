@@ -8,6 +8,12 @@ class QlooService:
     def __init__(self):
         self.client = QlooClient()
 
+    async def search_entity(self, query: str, type: str, limit: int):
+        try:
+            return await self.client.search_entities(query, type, limit)
+        except Exception as e:
+            return []
+
     async def get_recommendations(self, user_preferences: Dict[str, List[str]], limits: int) -> Dict[str, Any]:
         try:
             results = {
@@ -34,6 +40,14 @@ class QlooService:
                     limits
                 ))
                 task_names.append("books")
+
+            if "movies" in user_preferences and user_preferences["movies"]:
+                tasks.append(self.client.get_recommendations(
+                    user_preferences["movies"],
+                    "movie",
+                    limits
+                ))
+                task_names.append("movies")
 
             if tasks:
                 tasks_results = await asyncio.gather(*tasks, return_exceptions=True)
