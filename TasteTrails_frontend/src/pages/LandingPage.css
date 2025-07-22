@@ -1,0 +1,67 @@
+/* Landing Page Specific Styles */
+
+/* === LANDING CONTENT === */
+.landing-content {
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
+}
+
+/* === HERO SECTION === */
+.hero-section {
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeInUp 1s ease-out 0.5s forwards;
+}
+
+.hero-title {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    font-weight: 600;
+    color: white;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.hero-description {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.7;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* === CTA SECTION === */
+.cta-section {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: 4rem;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeInUp 1s ease-out 1s forwards;
+}
+
+/* === FEATURES SECTION === */
+.features-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    opacity: 0;
+    animation: fadeInUp 1s ease-out 1.5s forwards;
+}
+
+/* === FOOTER === */
+.landing-footer {
+    padding: 2rem 0;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--glass-border);
+    z-index: 10;
+    position: relative;
+}
+
+.landing-footer p {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}

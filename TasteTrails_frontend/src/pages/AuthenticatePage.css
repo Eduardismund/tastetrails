@@ -1,11 +1,31 @@
+/* Authentication Component Specific Styles */
+
+/* === AUTH CONTAINER === */
 .authenticate-container {
     max-width: 350px;
     width: 100%;
     text-align: center;
 }
 
+/* === AUTH FORM === */
+.generic-form {
+    width: 100%;
+}
 
-/* === FOOTER LINK === */
+.generic-form h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1.5rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+.form-group {
+    text-align: left;
+}
+
+/* === AUTH FOOTER === */
 .auth-footer {
     text-align: center;
     background: rgba(255, 255, 255, 0.05);
@@ -37,4 +57,3 @@
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
 }
-
