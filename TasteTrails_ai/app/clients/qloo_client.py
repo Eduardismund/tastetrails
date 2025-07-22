@@ -1,8 +1,11 @@
 import logging
 from typing import Dict, Any, List
+from urllib.parse import urlencode
+
 import httpx
 
 from app.config import settings
+from app.models.search_results import SearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -16,32 +19,41 @@ class QlooClient:
             "X-API-Key": self.api_key,
         }
 
-    async def search_entities(self, name: str, entity_type: str) -> str:
+
+    async def search_entities(self, name: str, entity_type: str, limit: int) -> List[SearchResult]:
         """
         Search for entities
-
-        Args:
-            name: Name to search for
-            entity_type: Type of entity (urn:entity:artist, urn:entity:restaurant, etc.)
         """
         try:
-            async with httpx.AsyncClient() as client:
+            async with (httpx.AsyncClient() as client):
                 url = f"{self.base_url}/search"
-                params = {"query": name, "types": entity_type}
+                encoded_query = urlencode({"query": name, "take": str(limit)})
+                full_url = f"{url}?{encoded_query}&types={entity_type}"
 
-                response = await client.get(url, headers=self.headers, params=params)
+                response = await client.get(full_url, headers=self.headers)
 
                 if response.status_code == 200:
                     data = response.json()
                     results = data.get("results", [])
+                    logger.info(f"Full response: {data}")
+                    final_results = []
                     if results:
-                        entity_id = results[0].get("entity_id", "")
-                        return entity_id
+                        for result in results:
+                            entity_id=result.get("entity_id")
+                            name=result.get("name")
+
+                            partial = SearchResult(
+                                entityId=entity_id,
+                                name=name,
+                            )
+                            final_results.append(partial)
+
+                    return final_results
 
         except Exception as e:
             logger.error(f"Search failed for '{name}': {e}")
 
-        return ""
+        return []
 
     async def get_recommendations(self,
                                   input_items: List[str],
@@ -62,13 +74,14 @@ class QlooClient:
                 entity_type = "urn:entity:" + entity_type
 
             for input_item in input_items:
-                entity_id = await self.search_entities(input_item, entity_type)
-
-                if entity_id:
-                    suggestions = await self.get_suggestion(entity_id, entity_type, limit)
-                    all_recommendations.extend(suggestions)
-                else:
-                    logger.warning(f"No entity found for: {input_item}")
+                search_result = await self.search_entities(input_item, entity_type,2)
+                if search_result and len(search_result)> 0:
+                    entity_id=search_result[0].entityId
+                    if entity_id:
+                        suggestions = await self.get_suggestion(entity_id, entity_type, limit)
+                        all_recommendations.extend(suggestions)
+                    else:
+                        logger.warning(f"No entity found for: {input_item}")
 
             unique_recommendations = self.remove_duplicate_entities(all_recommendations, input_items)
 
