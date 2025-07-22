@@ -1,57 +1,20 @@
-import React, { useState } from 'react';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRobot, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import './ItineraryDetails.css';
-
-
-interface ActivityGeneratorProps {
-    itineraryStartDate: string;
-    itineraryEndDate: string;
-    itineraryDestination: string;
-    userId: string;
-    timeSlot: {
-        start_time: string;
-        end_time: string;
-        date: string;
-    };
-    selectedTheme: string;
-    onTimeSlotChange: (timeSlot: {
-        start_time: string;
-        end_time: string;
-        date: string;
-    }) => void;
-    onThemeChange: (theme: string) => void;
-    onOptionsGenerated: (options: ActivityOption[]) => void;
-    onError: (error: string) => void;
-}
-
-interface ActivityOption {
-    id: string;
-    name: string;
-    activity: string;
-    location: string;
-    cultural_score: number;
-}
-
-interface GenerateOptionsRequest {
-    user_preferences: {
-        artists?: string[];
-        books?: string[];
-        movies?: string[];
-        activities?: string[];
-    };
-    city: string;
-    start_time: string;
-    end_time: string;
-    date: string;
-    theme: string;
-}
+import React, {useState} from 'react';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faRobot} from "@fortawesome/free-solid-svg-icons";
+import type {
+    ActivityGeneratorProps,
+    ActivityOption, ActivityResponse,
+    ApiResponse, GenerateOptionsRequest,
+    TasteProfile,
+    UserPreferences
+} from "../types/interfaces.ts";
 
 const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
                                                                  itineraryStartDate,
                                                                  itineraryEndDate,
                                                                  itineraryDestination,
                                                                  userId,
+                                                                 itineraryId,
                                                                  timeSlot,
                                                                  selectedTheme,
                                                                  onThemeChange,
@@ -60,50 +23,141 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
                                                                  onError
                                                              }) => {
     const [isGenerating, setIsGenerating] = useState(false);
+    const [timeConflict, setTimeConflict] = useState<string | null>(null);
+    const [existingActivities, setExistingActivities] = useState<ActivityResponse[]>([]);
+
+    const parseTime = (timeString: string): number => {
+        const [hours, minutes] = timeString.split(':').map(Number);
+        return hours * 60 + minutes;
+    };
+
+
+    const checkTimeSlotConflict = (
+        newStartTime: string,
+        newEndTime: string,
+        newDate: string,
+        activities: ActivityResponse[]
+    ): string | null => {
+        if (!newStartTime || !newEndTime || !newDate) {
+            return null;
+        }
+
+        const newStart = parseTime(newStartTime);
+        const newEnd = parseTime(newEndTime);
+
+        if (newEnd <= newStart) {
+            return "End time must be after start time";
+        }
+
+        const sameeDateActivities = activities.filter(activity =>
+            activity.activityDate === newDate
+        );
+
+        for (const activity of sameeDateActivities) {
+            const existingStart = parseTime(activity.startTime);
+            const existingEnd = parseTime(activity.endTime);
+
+            const hasOverlap = newStart < existingEnd && newEnd > existingStart;
+
+            if (hasOverlap) {
+                return `Time conflict with "${activity.title}" (${activity.startTime} - ${activity.endTime})`;
+            }
+        }
+
+        return null;
+    };
+
+    const getUserTasteProfile = async (userId: string): Promise<UserPreferences> => {
+        const tasteProfileResponse = await fetch(`http://localhost:8080/api/taste-profiles/users/${userId}`)
+
+        if (!tasteProfileResponse.ok) {
+            throw new Error('Failed to fetch taste profile');
+        }
+
+        const tasteProfileData = await tasteProfileResponse.json();
+        const tasteProfile: TasteProfile = tasteProfileData.data;
+
+        const userPreferences: UserPreferences = {}
+
+        if (tasteProfile.artistPreferences?.artists) {
+            userPreferences.artists = tasteProfile.artistPreferences.artists
+        }
+        if (tasteProfile.moviePreferences?.movies) {
+            userPreferences.movies = tasteProfile.moviePreferences.movies
+        }
+        if (tasteProfile.bookPreferences?.books) {
+            userPreferences.books = tasteProfile.bookPreferences.books
+        }
+
+        return userPreferences
+    }
+
+    const getExistingActivities = async (itineraryId: string): Promise<ActivityResponse[]> => {
+        const activitiesResponse = await fetch(`http://localhost:8080/api/itineraries/${itineraryId}/activities`)
+
+        if (!activitiesResponse.ok) {
+            throw new Error('Failed to fetch existing activities')
+        }
+
+        const activitiesData: ApiResponse<ActivityResponse[]> = await activitiesResponse.json();
+        return activitiesData.data;
+    }
+
+    const handleTimeSlotChange = (newTimeSlot: typeof timeSlot) => {
+        onTimeSlotChange(newTimeSlot);
+
+        const conflict = checkTimeSlotConflict(
+            newTimeSlot.start_time,
+            newTimeSlot.end_time,
+            newTimeSlot.date,
+            existingActivities
+        );
+        setTimeConflict(conflict);
+    };
 
     const generateActivityOptions = async () => {
         setIsGenerating(true);
-        onError(''); // Clear previous errors
+        onError('');
+        setTimeConflict(null);
 
         try {
-            // First, get user's taste profile
-            const tasteProfileResponse = await fetch(`http://localhost:8080/api/taste-profiles/users/${userId}`);
+            const activities = await getExistingActivities(itineraryId);
+            setExistingActivities(activities);
 
-            if (!tasteProfileResponse.ok) {
-                throw new Error('Failed to fetch taste profile');
+            const conflict = checkTimeSlotConflict(
+                timeSlot.start_time,
+                timeSlot.end_time,
+                timeSlot.date,
+                activities
+            );
+
+            if (conflict) {
+                setTimeConflict(conflict);
+                throw new Error(conflict);
             }
 
-            const tasteProfileData = await tasteProfileResponse.json();
-            const tasteProfile = tasteProfileData.data;
+            const userPreferences = await getUserTasteProfile(userId);
 
-            const userPreferences: {
-                artists?: string[];
-                books?: string[];
-                movies?: string[];
-                activities?: string[];
-            } = {};
+            const existingActivitiesForClaude: ActivityOption[] = activities.map((activity) => ({
+                id: activity.id,
+                name: activity.title,
+                activity: activity.description,
+                location: activity.address,
+                start_time: activity.startTime,
+                end_time: activity.endTime,
+                activity_date: activity.activityDate
+            }));
 
-            if (tasteProfile.musicPreferences?.artists) {
-                userPreferences.artists = tasteProfile.musicPreferences.artists;
-            }
-            if (tasteProfile.moviePreferences?.movies) {
-                userPreferences.movies = tasteProfile.moviePreferences.movies;
-            }
-            if (tasteProfile.activityPreferences?.activities) {
-                userPreferences.activities = tasteProfile.activityPreferences.activities;
-            }
-
-            // Prepare request for Claude API
             const claudeRequest: GenerateOptionsRequest = {
                 user_preferences: userPreferences,
                 city: itineraryDestination,
                 start_time: timeSlot.start_time,
                 end_time: timeSlot.end_time,
                 date: timeSlot.date,
-                theme: selectedTheme
+                theme: selectedTheme,
+                existing_activities: existingActivitiesForClaude
             };
 
-            // Call Claude API
             const claudeResponse = await fetch('http://localhost:8001/api/claude/generate-options', {
                 method: 'POST',
                 headers: {
@@ -131,10 +185,11 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
         }
     };
 
+    const hasTimeIssue = Boolean(timeConflict) || !timeSlot.date || !timeSlot.start_time || !timeSlot.end_time;
     return (
-        <div className="simple-feature-card main-page activity-generator">
+        <div className="simple-feature-card activity-generator">
             <h4>
-                <FontAwesomeIcon icon={faRobot} className="mr-2" />
+                <FontAwesomeIcon icon={faRobot} />
                 AI Activity Generator
             </h4>
 
@@ -149,9 +204,9 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
                             className="form-select"
                             disabled={isGenerating}
                         >
-                            <option value="Cultural Discovery">Cultural Discovery</option>
-                            <option value="Social Experience">Social Experience</option>
-                            <option value="Eating Experience">Eating Experience</option>
+                            <option value="Cultural Discovery">🎭 Cultural Discovery</option>
+                            <option value="Social Experience">👥 Social Experience</option>
+                            <option value="Eating Experience">🍽️ Eating Experience</option>
                         </select>
                     </div>
 
@@ -161,7 +216,7 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
                             id="date"
                             type="date"
                             value={timeSlot.date}
-                            onChange={(e) => onTimeSlotChange({...timeSlot, date: e.target.value})}
+                            onChange={(e) => handleTimeSlotChange({...timeSlot, date: e.target.value})}
                             min={itineraryStartDate}
                             max={itineraryEndDate}
                             className="form-input"
@@ -178,8 +233,8 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
                             id="start_time"
                             type="time"
                             value={timeSlot.start_time}
-                            onChange={(e) => onTimeSlotChange({...timeSlot, start_time: e.target.value})}
-                            className="form-input"
+                            onChange={(e) => handleTimeSlotChange({...timeSlot, start_time: e.target.value})}
+                            className={`form-input ${timeConflict ? 'error' : ''}`}
                             disabled={isGenerating}
                         />
                     </div>
@@ -190,26 +245,24 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
                             id="end_time"
                             type="time"
                             value={timeSlot.end_time}
-                            onChange={(e) => onTimeSlotChange({...timeSlot, end_time: e.target.value})}
-                            className="form-input"
+                            onChange={(e) => handleTimeSlotChange({...timeSlot, end_time: e.target.value})}
+                            className={`form-input ${timeConflict ? 'error' : ''}`}
                             disabled={isGenerating}
                         />
                     </div>
                 </div>
 
+
                 <button
                     onClick={generateActivityOptions}
-                    disabled={isGenerating || !timeSlot.date}
-                    className="action-btn generate-btn"
+                    disabled={isGenerating || hasTimeIssue}
+                    className={`generate-button submit-btn ${isGenerating ? 'loading' : ''} ${hasTimeIssue ? 'disabled' : ''}`}
                 >
                     {isGenerating ? (
-                        <>
-                            <FontAwesomeIcon icon={faSpinner} className="fa-spin mr-2" />
-                            Generating Options...
-                        </>
+                        'Generating...'
                     ) : (
                         <>
-                            <FontAwesomeIcon icon={faRobot} className="mr-2" />
+                            <FontAwesomeIcon icon={faRobot} />
                             Generate Activity Options
                         </>
                     )}

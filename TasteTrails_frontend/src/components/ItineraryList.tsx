@@ -4,12 +4,13 @@ import { faMapMarkerAlt, faCalendarAlt } from "@fortawesome/free-solid-svg-icons
 import type {ItineraryListProps } from '../types/interfaces';
 import './ItineraryList.css';
 
+
 const ItineraryList: React.FC<ItineraryListProps> = ({ itineraries, selectedId, onSelect }) => {
     return (
         <div className="itinerary-list-container">
             <div className="itinerary-list-header">
                 <h4>
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
+                    <FontAwesomeIcon icon={faMapMarkerAlt} />
                     Your Itineraries
                 </h4>
             </div>
@@ -34,7 +35,8 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ itineraries, selectedId, 
                             </div>
                             <div className="itinerary-dates">
                                 <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
-                                <span>{new Date(itinerary.startDate).toLocaleDateString()}</span>
+                                <span>{new Date(itinerary.startDate).toLocaleDateString()} to {new Date(itinerary.endDate).toLocaleDateString()}</span>
+
                             </div>
                             <div className="activity-count">
                                 {itinerary.activities?.length || 0} activities

@@ -3,14 +3,8 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
 import GenericForm from "../components/GenericForm";
-import type { FormField } from "../types/interfaces";
-import './AuthenticatePage.css'; // Import the CSS file
-
-interface RegisterFormData extends Record<string, string> {
-    name: string;
-    email: string;
-    password: string;
-}
+import type { RegisterFormData, FormField } from "../types/interfaces";
+import './AuthenticatePage.css';
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
@@ -78,7 +72,7 @@ const RegisterPage: React.FC = () => {
 
             <main className="simple-main common">
                 <div className="authenticate-container">
-                    <div className="form-card">
+                    <div className="simple-feature-card auth-page">
                         <GenericForm<RegisterFormData>
                             title="Create Your Account"
                             fields={fields}

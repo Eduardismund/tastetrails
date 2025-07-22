@@ -4,6 +4,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { useScrollToTop } from '../hooks/useScrollToTop.js';
+import './LandingPage.css';
 
 import {
     faMapLocationDot,
@@ -75,7 +76,7 @@ const LandingPage: React.FC = () => {
                         <div className="simple-feature-card main-page">
                             <FontAwesomeIcon
                                 icon={faUtensils}
-                                className="feature-icon text-white text-5xl mb-4 block"
+                                className="feature-icon"
                             />
                             <h3>Taste Profiles</h3>
                             <p>Create your unique taste profile to get personalized recommendations</p>
@@ -83,7 +84,7 @@ const LandingPage: React.FC = () => {
                         <div className="simple-feature-card main-page">
                             <FontAwesomeIcon
                                 icon={faMapMarkedAlt}
-                                className="feature-icon text-white text-5xl mb-4 block"
+                                className="feature-icon"
                             />
                             <h3>Smart Itineraries</h3>
                             <p>Plan your trips with AI-powered restaurant and activity suggestions</p>
@@ -91,7 +92,7 @@ const LandingPage: React.FC = () => {
                         <div className="simple-feature-card main-page">
                             <FontAwesomeIcon
                                 icon={faStar}
-                                className="feature-icon text-white text-5xl mb-4 block"
+                                className="feature-icon"
                             />
                             <h3>Local Experiences</h3>
                             <p>Discover hidden gems and authentic local dining experiences</p>

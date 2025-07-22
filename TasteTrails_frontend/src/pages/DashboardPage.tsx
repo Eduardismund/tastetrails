@@ -9,7 +9,7 @@ import {
     faSpinner
 } from "@fortawesome/free-solid-svg-icons";
 import type { ApiResponse, User } from "../types/interfaces.ts";
-import './DashboardPage.css'; // Import the CSS file
+import './DashboardPage.css';
 
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
@@ -18,7 +18,6 @@ const DashboardPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch user data on component mount
     useEffect(() => {
         if (!userId) {
             navigate('/register');
@@ -55,7 +54,6 @@ const DashboardPage: React.FC = () => {
     };
 
     const handleLogout = () => {
-        // Clear any stored data if needed
         navigate('/');
     };
 
@@ -63,7 +61,7 @@ const DashboardPage: React.FC = () => {
         return (
             <div className="page-style">
                 <div className="fixed-background"></div>
-                <header className="dashboard-header">
+                <header className="common-header app">
                     <h1>
                         TasteTrails
                         <FontAwesomeIcon icon={faMapLocationDot} className="ml-3" />
@@ -71,7 +69,7 @@ const DashboardPage: React.FC = () => {
                 </header>
                 <main className="loading-container">
                     <div className="loading-text">
-                        <FontAwesomeIcon icon={faSpinner} className="fa-spin mr-3" />
+                        <FontAwesomeIcon icon={faSpinner} className="fa-spin" />
                         Loading your dashboard...
                     </div>
                 </main>
@@ -89,9 +87,9 @@ const DashboardPage: React.FC = () => {
                         <FontAwesomeIcon icon={faMapLocationDot} className="ml-3" />
                     </h1>
                 </header>
-                <main className="simple-main">
+                <main className="error-container">
                     <div className="error-message">
-                        {error}
+                        <p>{error}</p>
                     </div>
                     <button
                         className="retry-btn"
@@ -105,7 +103,7 @@ const DashboardPage: React.FC = () => {
     }
 
     return (
-        <div className="dashboard-page">
+        <div className="page-style">
             <div className="fixed-background"></div>
 
             <header className="common-header app">
@@ -131,22 +129,21 @@ const DashboardPage: React.FC = () => {
 
                         <div className="action-cards">
                             <div className="simple-feature-card dash-page" onClick={handleModifyProfile}>
-                                <FontAwesomeIcon icon={faUser} className="text-4xl mb-4 text-white" />
+                                <FontAwesomeIcon icon={faUser} className="feature-icon" />
                                 <h4>Modify Profile</h4>
                                 <p>Update your cultural taste preferences, add new artists, and refine your profile</p>
-                                <button className="action-btn">Edit Profile</button>
+                                <button className="action-btn btn-primary">Edit Profile</button>
                             </div>
 
                             <div className="simple-feature-card dash-page" onClick={handleManageItineraries}>
-                                <FontAwesomeIcon icon={faRoute} className="text-4xl mb-4 text-white" />
+                                <FontAwesomeIcon icon={faRoute} className="feature-icon" />
                                 <h4>Manage Itineraries</h4>
                                 <p>Create new travel plans, view existing itineraries, and explore destinations</p>
-                                <button className="action-btn">View Itineraries</button>
+                                <button className="action-btn btn-primary">View Itineraries</button>
                             </div>
                         </div>
                     </section>
 
-                    {/* Account Information Section */}
                     <section className="account-section">
                         <h4>Account Information</h4>
                         <div className="account-info">

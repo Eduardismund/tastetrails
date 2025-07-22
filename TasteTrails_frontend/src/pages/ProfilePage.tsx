@@ -1,14 +1,24 @@
 import {useNavigate, useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faMapLocationDot, faMusic, faPlus, faTimes, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import './ProfilePage.css'; // Import profile-specific CSS
+import {
+    faArrowLeft,
+    faMapLocationDot,
+    faMusic,
+    faSpinner,
+    faBook,
+    faFilm
+} from "@fortawesome/free-solid-svg-icons";
+import './ProfilePage.css';
+import ItemListManager from "../components/ItemListManager.tsx";
 
 const ProfilePage: React.FC = () => {
     const navigate = useNavigate();
     const {userId} = useParams<{userId: string}>()
     const [preferences, setPreferences] = useState({
-        artists: ['']
+        artists: [] as string[],
+        books: [] as string[],
+        movies: [] as string[]
     });
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -29,12 +39,15 @@ const ProfilePage: React.FC = () => {
 
             if(response.ok){
                 const data = await response.json();
-                const existingArtists = data.data?.musicPreferences?.artists || []
-                if(existingArtists.length > 0) {
-                    setPreferences({
-                        artists: existingArtists
-                    })
-                }
+                const existingArtists = data.data?.artistPreferences?.artists || []
+                const existingMovies = data.data?.moviePreferences?.movies || []
+                const existingBooks = data.data?.bookPreferences?.books || []
+
+                setPreferences({
+                    artists: existingArtists,
+                    movies: existingMovies,
+                    books: existingBooks
+                })
             } else if(response.status === 404){
                 console.log("No existing profiles found!")
             }
@@ -45,28 +58,21 @@ const ProfilePage: React.FC = () => {
         }
     }
 
-    const handleAddItem = (category:  keyof typeof preferences) => {
+    const handleAddItem = (category: string, value: string) => {
+        const key = category as keyof typeof preferences;
         setPreferences({
             ...preferences,
-            [category]: [...preferences[category], '']
+            [key]: [...preferences[key], value]
         })
     };
 
-    const handleRemoveItem = (category:  keyof typeof preferences, index: number) => {
-        const newItems = preferences[category].filter((_, i) => i !== index)
+    const handleRemoveItem = (category: string, index: number) => {
+        const key = category as keyof typeof preferences;
+        const newItems = preferences[key].filter((_, i) => i !== index)
         setPreferences({
             ...preferences,
-            [category]: newItems
+            [key]: newItems
         });
-    };
-
-    const handleItemChange =  (category: keyof typeof preferences, index: number, value:string) => {
-        const newItems = [...preferences[category]]
-        newItems[index] = value;
-        setPreferences({
-            ...preferences,
-            [category]: newItems
-        })
     };
 
     const handleSubmit = async (e : React.FormEvent) => {
@@ -77,8 +83,17 @@ const ProfilePage: React.FC = () => {
         }
 
         const filteredArtists = preferences.artists.filter(artist => artist.trim() !== '');
+        const filteredBooks = preferences.books.filter(book => book.trim() !== '');
+        const filteredMovies = preferences.movies.filter(movie => movie.trim() !== '');
 
-        if(filteredArtists.length === 0) {
+        console.log('Filtered data:', {
+            artists: filteredArtists,
+            movies: filteredMovies,
+            books: filteredBooks
+        });
+
+        if(filteredArtists.length === 0 && filteredBooks.length === 0 && filteredMovies.length === 0) {
+            setError('Please add at least one item to any category');
             return;
         }
 
@@ -93,18 +108,23 @@ const ProfilePage: React.FC = () => {
                 },
                 body: JSON.stringify({
                     artistPreferences: {artists: filteredArtists},
-                    moviePreferences: {movies : []}
+                    bookPreferences: {books: filteredBooks},
+                    moviePreferences: {movies : filteredMovies}
                 })
             });
 
+            console.log('API Response Status:', response.status);
+
             const data = await response.json();
+            console.log('API Response Data:', data);
 
             if(response.ok){
                 navigate(`/dashboard/${userId}`);
             }else{
                 setError(data.message || 'Failed to save')
             }
-        } catch {
+        } catch (error) {
+            console.error('API Error:', error);
             setError('Network error');
         } finally{
             setIsLoading(false)
@@ -120,11 +140,11 @@ const ProfilePage: React.FC = () => {
                         <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
                         Back
                     </button>
-                    <h1>TasteTrails <FontAwesomeIcon icon={faMapLocationDot} /></h1>
+                    <h1>TasteTrails <FontAwesomeIcon icon={faMapLocationDot} className="ml-3" /></h1>
                     <div></div>
                 </header>
                 <main className="simple-main common">
-                    <div className="simple-feature-card auth-page loading-card">
+                    <div className="simple-feature-card loading-card">
                         <FontAwesomeIcon icon={faSpinner} className="feature-icon fa-spin" />
                         <h3>Loading existing profile...</h3>
                     </div>
@@ -142,105 +162,67 @@ const ProfilePage: React.FC = () => {
                     <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
                     Back to Dashboard
                 </button>
-                <h1>TasteTrails <FontAwesomeIcon icon={faMapLocationDot} /></h1>
+                <h1>TasteTrails <FontAwesomeIcon icon={faMapLocationDot} className="ml-3" /></h1>
                 <div></div>
             </header>
 
             <main className="simple-main">
                 <div className="container">
-                    {/* Hero Section */}
                     <div className="hero-section">
                         <h2 className="hero-title">Tell us about Your Cultural Taste</h2>
                         <p className="hero-description">Help us understand your artistic soul</p>
                     </div>
 
-                    {/* Current Artists Display */}
-                    {preferences.artists.length > 0 && preferences.artists.some(artist => artist.trim() !== '') && (
-                        <div className="simple-feature-card main-page current-artists">
-                            <FontAwesomeIcon icon={faMusic} className="feature-icon" />
-                            <h4>Your current artists</h4>
-                            <div className="artist-list">
-                                {preferences.artists.filter(artist => artist.trim() !== '').map((artist, index) => {
-                                    const originalIndex = preferences.artists.findIndex(a => a === artist);
-                                    return (
-                                        <div key={index} className="artist-tag-container">
-                                            <span className="artist-tag">{artist}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveItem('artists', originalIndex)}
-                                                disabled={isLoading}
-                                                className="artist-remove-btn"
-                                                title={`Remove ${artist}`}
-                                            >
-                                                <FontAwesomeIcon icon={faTimes} />
-                                            </button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Error Display */}
                     {error && (
-                        <div className="simple-feature-card error-card">
-                            <FontAwesomeIcon icon={faTimes} className="feature-icon error-icon" />
-                            <h4>Oops! Something went wrong</h4>
+                        <div className="error-message">
                             <p>{error}</p>
                         </div>
                     )}
 
-                    {/* Form Section */}
-                    <div className="simple-feature-card main-page profile-form-card">
-                        <form onSubmit={handleSubmit} className="profile-form">
-                            <div className="form-section">
-                                <h3 className="form-section-title">
-                                    <FontAwesomeIcon icon={faMusic} className="mr-2" />
-                                    Favourite artists/musicians
-                                </h3>
+                    <form onSubmit={handleSubmit} className="profile-form">
+                        <ItemListManager
+                            title="Favourite artists"
+                            items={preferences.artists}
+                            placeholder="Enter artist name"
+                            icon={faMusic}
+                            category="artists"
+                            isLoading={isLoading}
+                            onAddItem={handleAddItem}
+                            onRemoveItem={handleRemoveItem}
+                            addButtonText="Add Artist"
+                        />
 
-                                <div className="input-list">
-                                    {preferences.artists.map((artist, index) => (
-                                        <div key={index} className="input-group">
-                                            <input
-                                                type="text"
-                                                value={artist}
-                                                disabled={isLoading}
-                                                onChange={(e) => handleItemChange('artists', index, e.target.value)}
-                                                placeholder="Enter artist name"
-                                                className="profile-input"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
+                        <ItemListManager
+                            title="Favourite books"
+                            items={preferences.books}
+                            placeholder="Enter book title"
+                            icon={faBook}
+                            category="books"
+                            isLoading={isLoading}
+                            onAddItem={handleAddItem}
+                            onRemoveItem={handleRemoveItem}
+                            addButtonText="Add Book"
+                        />
 
-                                <button
-                                    type="button"
-                                    disabled={isLoading}
-                                    onClick={() => handleAddItem('artists')}
-                                    className="add-btn"
-                                >
-                                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                                    Add Another Artist
-                                </button>
-                            </div>
+                        <ItemListManager
+                            title="Favourite movies"
+                            items={preferences.movies}
+                            placeholder="Enter movie title"
+                            icon={faFilm}
+                            category="movies"
+                            isLoading={isLoading}
+                            onAddItem={handleAddItem}
+                            onRemoveItem={handleRemoveItem}
+                            addButtonText="Add Movie"
+                        />
 
-                            <button
-                                type="submit"
-                                disabled={isLoading || preferences.artists.filter(artist => artist.trim() !== '').length === 0}
-                                className="action-btn submit-btn"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <FontAwesomeIcon icon={faSpinner} className="fa-spin mr-2" />
-                                        Saving Profile...
-                                    </>
-                                ) : (
-                                    'Complete Profile'
-                                )}
-                            </button>
-                        </form>
-                    </div>
+                        <button
+                            type="submit"
+                            disabled={isLoading || (preferences.artists.length === 0 && preferences.movies.length === 0 && preferences.books.length === 0)}
+                            className={`submit-btn ${isLoading ? 'loading' : ''}`}>
+                            {isLoading ? 'Saving Profile...' : 'Complete Profile'}
+                        </button>
+                    </form>
                 </div>
             </main>
         </div>
