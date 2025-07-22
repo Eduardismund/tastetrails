@@ -35,6 +35,17 @@ public class UserService {
 
     }
 
+    public User authenticateUser(String email, String password){
+        final var user = findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User with email " + email + " does not exist"));
+
+        if(!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Incorrect password");
+        }
+
+        return user;
+    }
+
     @Transactional(readOnly = true)  // ← Added readOnly for performance
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email.toLowerCase().trim());

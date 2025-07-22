@@ -1,18 +1,15 @@
 package ro.eduardismund.tastetrails_backend.service;
 
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ro.eduardismund.tastetrails_backend.model.Itinerary;
-import ro.eduardismund.tastetrails_backend.model.TasteProfile;
 import ro.eduardismund.tastetrails_backend.repository.ItineraryRepository;
-import ro.eduardismund.tastetrails_backend.repository.TasteProfileRepository;
 import ro.eduardismund.tastetrails_backend.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,7 +21,7 @@ public class ItineraryService {
     private final UserRepository userRepository;
     private final ItineraryRepository itineraryRepository;
 
-    public Itinerary createItinerary(UUID userId, String destination, LocalDate startDate, LocalDate endDate, List<Map<String, Object>> activities) {
+    public Itinerary createItinerary(UUID userId, String destination, LocalDate startDate, LocalDate endDate) {
 
         final var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
@@ -38,7 +35,6 @@ public class ItineraryService {
                 .destination(destination)
                 .startDate(startDate)
                 .endDate(endDate)
-                .activities(activities)
                 .build();
 
         return itineraryRepository.save(itinerary);

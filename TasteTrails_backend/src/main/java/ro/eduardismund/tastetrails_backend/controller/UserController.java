@@ -5,9 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ro.eduardismund.tastetrails_backend.dtos.ApiResponse;
-import ro.eduardismund.tastetrails_backend.dtos.CreateUserRequest;
-import ro.eduardismund.tastetrails_backend.dtos.UserResponse;
+import ro.eduardismund.tastetrails_backend.dtos.*;
 import ro.eduardismund.tastetrails_backend.service.UserService;
 
 import java.util.List;
@@ -16,7 +14,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@CrossOrigin(origins = {"http://localhost:5173"})
 public class UserController {
     private final UserService userService;
 
@@ -46,6 +44,21 @@ public class UserController {
                  final var response = UserResponse.fromUser(user);
                  return ResponseEntity.ok(ApiResponse.success("User found", response));
              }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("User not found")));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
+        try{
+            final var user = userService.authenticateUser(request.getEmail(), request.getPassword());
+
+            final var loginResponse = LoginResponse.builder().
+                    user(UserResponse.fromUser(user))
+                    .build();
+
+            return ResponseEntity.ok(ApiResponse.success("Login successful", loginResponse));
+        } catch( RuntimeException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @GetMapping

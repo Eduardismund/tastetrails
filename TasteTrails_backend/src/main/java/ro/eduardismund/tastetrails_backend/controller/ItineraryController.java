@@ -16,7 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/itineraries")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@CrossOrigin(origins = {"http://localhost:5173"})
 public class ItineraryController {
     private final ItineraryService itineraryService;
 
@@ -27,8 +27,7 @@ public class ItineraryController {
                     userId,
                     request.getDestination(),
                     request.getStartDate(),
-                    request.getEndDate(),
-                    request.getActivities()
+                    request.getEndDate()
             );
 
             final var response = ItineraryResponse.fromItinerary(itinerary);
