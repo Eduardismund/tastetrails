@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import qloo_routes, claude_routes
+from app.api import qloo_routes, claude_routes, google_maps_routes
 app = FastAPI(title="TasteTrails AI")
 
 app.add_middleware(
@@ -12,6 +12,7 @@ app.add_middleware(
 
 app.include_router(qloo_routes.router, prefix="/api", tags=["qloo"])
 app.include_router(claude_routes.router, prefix="/api", tags=["claude"])
+app.include_router(google_maps_routes.router,prefix="/api", tags=["google maps"])
 
 @app.get("/")
 def health_check():
