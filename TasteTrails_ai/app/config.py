@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     # API keys
     ANTHROPIC_API_KEY: str
     QLOO_API_KEY: str
+    GOOGLE_MAPS_API_KEY: str
+    GOOGLE_MAPS_BASE_URL: str
 
     # Service URLs
     SPRING_BOOT_URL: str = "http://172.23.128.1:8080"
