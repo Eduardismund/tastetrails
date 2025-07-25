@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timezone, timedelta, date
 from typing import List, Dict, Any
 
 from app.clients.google_maps_client import GoogleMapsClient
@@ -170,6 +171,157 @@ class GoogleMapsService:
             )
 
             return weather_result
+
+        except Exception as e:
+            logger.error(f"Service error getting weather for {location}: {str(e)}")
+            return {
+                "success": False,
+                "error": "Internal service error while getting weather forecast"
+            }
+    async def get_hourly_air_quality_range_for_location(self, location: str, start_hour: str, end_hour: str, target_date: str) -> Dict[str, Any]:
+
+        try:
+            start_datetime = datetime.strptime(f"{target_date} {start_hour}", "%Y-%m-%d %H:%M")
+            end_datetime = datetime.strptime(f"{target_date} {end_hour}", "%Y-%m-%d %H:%M")
+
+            start_datetime = start_datetime.replace(tzinfo=timezone.utc)
+            end_datetime = end_datetime.replace(tzinfo=timezone.utc)
+
+            if end_datetime <= start_datetime:
+                return {
+                    "success": False,
+                    "error": "End time must be after start time"
+                }
+
+            now = datetime.now(timezone.utc)
+            hours_until_end = (end_datetime - now).total_seconds() / 3600
+
+            if hours_until_end > 96:
+                max_date = (now + timedelta(hours=96)).strftime("%Y-%m-%d %H:%M")
+                return {
+                    "success": False,
+                    "error": f"Date range is too far in future",
+                    "max_date": max_date
+                }
+            if not location or not location.strip():
+                return {
+                    "success": False,
+                    "error": "Location cannot be empty"
+                }
+
+            air_quality = await self.client.get_hourly_air_quality_range(
+                location=location.strip(),
+                start_datetime=start_datetime,
+                end_datetime=end_datetime,
+                target_date=target_date
+            )
+
+            return air_quality
+
+        except Exception as e:
+            logger.error(f"Service error getting weather for {location}: {str(e)}")
+            return {
+                "success": False,
+                "error": "Internal service error while getting weather forecast"
+            }
+    async def get_pollen_forecast_for_location(self, location: str,  target_date: str) -> Dict[str, Any]:
+
+        try:
+            if target_date is None:
+                target_date_obj = date.today()
+                target_date = target_date_obj.strftime("%Y-%m-%d")
+            else:
+                try:
+                    target_date_obj = datetime.strptime(target_date, "%Y-%m-%d").date()
+                except ValueError:
+                    return {
+                        "success": False,
+                        "error": "Invalid date format. Use YYYY-MM-DD (e.g., '2025-07-28')"
+                    }
+            today = date.today()
+            days_from_today = (target_date_obj - today).days
+
+            if days_from_today < 0:
+                return {
+                    "success": False,
+                    "error": f"Cannot get pollen data for past dates. Target date {target_date} is {abs(days_from_today)} days ago."
+                }
+
+            if days_from_today > 4:
+                max_date = (today + timedelta(days=4)).strftime("%Y-%m-%d")
+                return {
+                    "success": False,
+                    "error": f"Target date {target_date} is too far in the future. Maximum date available is {max_date}."
+                }
+
+            air_quality = await self.client.get_pollen_forecast(
+                location=location.strip(),
+                days_offset=days_from_today
+            )
+
+            return air_quality
+
+        except Exception as e:
+            logger.error(f"Service error getting weather for {location}: {str(e)}")
+            return {
+                "success": False,
+                "error": "Internal service error while getting weather forecast"
+            }
+    async def get_street_view_image_for_location(self, location: str, size: str = "400x400", fov: int = 90, heading: int = 0, pitch: int = 0) -> Dict[str, Any]:
+
+        try:
+            if not location or not location.strip():
+                return {
+                    "success": False,
+                    "error": "Location cannot be empty"
+                }
+
+            if "x" not in size:
+                return {
+                    "success": False,
+                    "error": "Size must be in format 'widthxheight' (e.g., '400x400')"
+                }
+
+            try:
+                width, height = map(int, size.split("x"))
+                if width > 640 or height > 640 or width < 1 or height < 1:
+                    return {
+                        "success": False,
+                        "error": "Image dimensions must be between 1x1 and 640x640 pixels"
+                    }
+            except ValueError:
+                return {
+                    "success": False,
+                    "error": "Invalid size format. Use 'widthxheight' (e.g., '400x400')"
+                }
+
+            if fov < 10 or fov > 120:
+                return {
+                    "success": False,
+                    "error": "Field of view must be between 10 and 120 degrees"
+                }
+
+            if heading < 0 or heading > 360:
+                return {
+                    "success": False,
+                    "error": "Heading must be between 0 and 360 degrees"
+                }
+
+            if pitch < -90 or pitch > 90:
+                return {
+                    "success": False,
+                    "error": "Pitch must be between -90 and 90 degrees"
+                }
+
+            google_street_view = await self.client.get_street_view_image(
+                size=size,
+                location=location.strip(),
+                fov=fov,
+                heading=heading,
+                pitch=pitch,
+            )
+
+            return google_street_view
 
         except Exception as e:
             logger.error(f"Service error getting weather for {location}: {str(e)}")

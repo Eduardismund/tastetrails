@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Optional, List
 
 import httpx
@@ -24,6 +25,159 @@ class GoogleMapsClient:
             "X-Goog-Api-Key": self.api_key,
             "X-Goog-FieldMask": "routes.duration,routes.distanceMeters"
         }
+
+    async def get_street_view_image(self, location: str, size: str = "400x400", fov: int = 90, heading: int = 0, pitch: int = 0) -> Dict[str, Any]:
+        try:
+            base_url = "https://maps.googleapis.com/maps/api/streetview"
+
+            params = {
+                "size": size,
+                "location": location.strip(),
+                "fov": fov,
+                "heading": heading,
+                "pitch": pitch,
+                "key": self.api_key
+            }
+
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                metadata_params = params.copy()
+                metadata_url = "https://maps.googleapis.com/maps/api/streetview/metadata"
+
+                metadata_response = await client.get(
+                    url=metadata_url,
+                    params=metadata_params
+                )
+
+                metadata_response.raise_for_status()
+                metadata_data = metadata_response.json()
+
+                if metadata_data.get("status") != "OK":
+                    return {
+                        "success": False,
+                        "error": f"Street View not available for this location: {metadata_data.get('status', 'Unknown error')}"
+                    }
+
+                image_url = f"{base_url}?" + "&".join([f"{k}={v}" for k, v in params.items()])
+
+                return {
+                    "success": True,
+                    "location": location,
+                    "image_url": image_url,
+                    "image_size": size,
+                    "parameters": {
+                        "fov": fov,
+                        "heading": heading,
+                        "pitch": pitch
+                    }
+                }
+
+        except httpx.HTTPStatusError as e:
+            return {
+                "success": False,
+                "error": f"API error: {e.response.status_code}"
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
+    async def get_hourly_air_quality_range(self, location: str, start_datetime, end_datetime, target_date: str) -> Dict[str, Any]:
+        geocode_result = await self.geocode_address(location)
+        if not geocode_result:
+            return []
+
+        lat, lng = geocode_result["latitude"], geocode_result["longitude"]
+        try:
+
+            hours_in_range = int((end_datetime - start_datetime).total_seconds() / 3600)
+
+            url = "https://airquality.googleapis.com/v1/forecast:lookup"
+
+            request_body = {
+                "location": {
+                    "latitude": lat,
+                    "longitude": lng
+                },
+                "period": {
+                    "startTime": start_datetime.isoformat(),
+                    "endTime": end_datetime.isoformat(),
+                },
+                "pageSize" : min(hours_in_range + 1, 96),
+                "extraComputations" : [
+                    "HEALTH_RECOMMENDATIONS",
+                    "DOMINANT_POLLUTANT_CONCENTRATION",
+                    "POLLUTANT_ADDITIONAL_INFO"
+                ],
+                "languageCode": "en",
+                "universalAqi": True
+            }
+
+            params = {
+                "key": self.api_key,
+            }
+
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+
+                response = await client.post(
+                    url=url,
+                    params=params,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept-Language": "en"
+                    },
+                    json=request_body
+                )
+
+                response.raise_for_status()
+
+                data = response.json()
+
+                return self._parse_air_quality_data(data, target_date, start_datetime, end_datetime, location)
+        except httpx.HTTPStatusError as e:
+            return {"success": False, "error": f"API error: {e.response.status_code}"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    async def get_pollen_forecast(self, location: str, days_offset: int) -> Dict[str, Any]:
+
+        try:
+            geocode_result = await self.geocode_address(location)
+            if not geocode_result:
+                return {
+                    "success": False,
+                    "error": "Location not found"
+                }
+
+            lat, lng = geocode_result["latitude"], geocode_result["longitude"]
+
+            url = "https://pollen.googleapis.com/v1/forecast:lookup"
+
+            params = {
+                "key": self.api_key,
+                "location.latitude": lat,
+                "location.longitude": lng,
+                "days": days_offset + 1,
+                "languageCode": "en",
+                "plantsDescription": "false"
+            }
+
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+
+                response = await client.get(
+                    url=url,
+                    params=params,
+                )
+
+                response.raise_for_status()
+
+                data = response.json()
+
+                return self._parse_pollen_data(data, location, days_offset)
+        except httpx.HTTPStatusError as e:
+            return {"success": False, "error": f"API error: {e.response.status_code}"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
     async def search_nearby_places(self, location: str, radius: float = 10000.0, max_results: int = 20) -> List[Dict[str, Any]]:
         try:
@@ -185,7 +339,7 @@ class GoogleMapsClient:
             lat, lng = geocode_result["latitude"], geocode_result["longitude"]
 
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                url = "https://weather.googleapis.com/v1/forecast/days:lookup"  # FIXED
+                url = "https://weather.googleapis.com/v1/forecast/days:lookup"
 
                 params = {
                     "key": self.api_key,
@@ -206,6 +360,128 @@ class GoogleMapsClient:
             return {"success": False, "error": e}
         except Exception as e:
             return {"success": False, "error": e}
+
+    def _parse_pollen_data(self, data: Dict, location: str, days_from_today: int) -> Dict[str, Any]:
+        try:
+            daily_info = data.get("dailyInfo", [])
+            if not daily_info:
+                return {
+                    "success": False,
+                    "error": "No pollen data available for this location"
+                }
+
+            day_data = daily_info[days_from_today]
+
+            pollen_summary = {}
+            for pollen_type in day_data.get("pollenTypeInfo", []):
+                code = pollen_type.get("code", "").lower()
+                index_info = pollen_type.get("indexInfo", {})
+
+                if index_info:  # Only include if there's actual data
+                    pollen_summary[code] = {
+                        "level": index_info.get("value", 0),
+                        "category": index_info.get("category", "Unknown"),
+                        "in_season": pollen_type.get("inSeason", False)
+                    }
+
+            overall_level = 0
+            worst_pollen_type = "none"
+            for pollen_type, info in pollen_summary.items():
+                if info["level"] > overall_level:
+                    overall_level = info["level"]
+                    worst_pollen_type = pollen_type
+
+            active_plants = []
+            for plant in day_data.get("plantInfo", []):
+                if plant.get("inSeason") and plant.get("indexInfo", {}).get("value", 0) > 0:
+                    active_plants.append({
+                        "name": plant.get("displayName", "Unknown"),
+                        "level": plant.get("indexInfo", {}).get("value", 0),
+                        "type": plant.get("plantDescription", {}).get("type", "").lower()
+                    })
+
+            active_plants.sort(key=lambda x: x["level"], reverse=True)
+
+
+            return {
+                "success": True,
+                "location": location,
+                "days_from_today": days_from_today,
+                "overall_level": overall_level,
+                "worst_pollen_type": worst_pollen_type,
+                "pollen_summary": pollen_summary,
+                "active_plants": active_plants[:3]
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Error parsing pollen data: {str(e)}"
+            }
+    def _parse_air_quality_data(self, data: Dict, target_date: str, start_datetime, end_datetime, location: str) -> Dict[str, Any]:
+        try:
+            forecasts = data.get("hourlyForecasts", [])
+            if not forecasts:
+                return {
+                    "success": False,
+                    "error": "No air quality data available"
+                }
+            hourly_data=[]
+            aqi_values=[]
+
+            for forecast in forecasts:
+                if not forecast.get("indexes"):
+                    continue
+                forecast_dt_str = forecast.get("dateTime", "")
+                try:
+                    forecast_dt = datetime.fromisoformat(forecast_dt_str.replace("Z", "+00:00"))
+                except:
+                    continue
+                if not (start_datetime <= forecast_dt <= end_datetime):
+                    continue
+
+                aqi_data = None
+                for index in forecast.get("indexes", []):
+                    if index.get("code") == "uaqi":
+                        aqi_data = index
+                        break
+
+                if not aqi_data:
+                    continue
+
+                aqi = aqi_data.get("aqi", 0)
+                aqi_values.append(aqi)
+                hourly_data.append({
+                    "hour": forecast_dt.strftime("%H:%M"),
+                    "aqi": aqi
+                })
+
+            if not hourly_data:
+                return {
+                    "success": False,
+                    "error": "No data for requested time range"
+                }
+
+            avg_aqi = round(sum(aqi_values) / len(aqi_values))
+            min_aqi = min(aqi_values)
+            max_aqi = max(aqi_values)
+
+            return {
+                "success": True,
+                "location": location,
+                "date": target_date,
+                "average_aqi": avg_aqi,
+                "min_aqi": min_aqi,
+                "max_aqi": max_aqi,
+                "hourly": hourly_data
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
 
     def _parse_weather_data_for_day(self, data: Dict, day_offset: int) -> Dict[str, Any]:
         try:

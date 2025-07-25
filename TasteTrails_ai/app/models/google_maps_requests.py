@@ -73,3 +73,39 @@ class WeatherRequest(BaseModel):
         description="Number of days ahead (0=today, 1=tomorrow, max 9)",
         example=1
     )
+
+# noinspection PyArgumentList
+class AirQualityRequest(BaseModel):
+    """Request model for weather forecast."""
+    location: str = Field(
+        ...,
+        min_length=1,
+        description="Location to get weather forecast for",
+        example="London, UK"
+    )
+    start_hour: str
+    end_hour: str
+    target_date: str
+
+# noinspection PyArgumentList
+class PollenQualityRequest(BaseModel):
+    location: str = Field(
+        ...,
+        min_length=1,
+        description="Location to get weather forecast for",
+        example="London, UK"
+    )
+    target_date: str
+
+# noinspection PyArgumentList
+class StreetViewRequest(BaseModel):
+    location: str = Field(
+        ...,
+        min_length=1,
+        description="Location to get weather forecast for",
+        example="London, UK"
+    )
+    size: Optional[str]
+    fov: Optional[int]
+    heading: Optional[int]
+    pitch: Optional[int]
