@@ -40,9 +40,22 @@ class ClaudeService:
                 raise HTTPException(status_code=500, detail="Google Maps failed")
 
 
+            air_quality_info = await google_maps_service.get_hourly_air_quality_range_for_location(city, start_time, end_time, str(target_date))
+
+            if not air_quality_info.get("success"):
+                raise HTTPException(status_code=500, detail="Google Maps failed")
+
+            pollen_info = await google_maps_service.get_pollen_forecast_for_location(city, str(target_date))
+
+            if not pollen_info.get("success"):
+                raise HTTPException(status_code=500, detail="Google Maps failed")
+
+
             prompt = f"""
                         Have the mindset of an expert trip advisor for {theme} that knows all the activities and periodic events in the city {city}, between the time period: {start_time} to {end_time} on date {date}.
-                        Google Places API recommends the following: {nearby_venues},
+                        Google Places API recommends the following: {nearby_venues}
+                        The air quality is the following: {air_quality_info}
+                        The pollen forecast is the following: {pollen_info}
                         The weather on the corresponding day is: {weather_info}
                         The following activities are already existing: {existing_activities}
                         User's preferences are: {user_preferences}
@@ -51,13 +64,14 @@ class ClaudeService:
                         Return only this JSON format:
                         {{
                             "options": [
-                                {{"id": "option_1", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant"}},
-                                {{"id": "option_2", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant"}},
-                                {{"id": "option_3", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant"}}
+                                {{"id": "option_1", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant", "coordinates": "Best coordinates to see the location", "fov": "int", "heading": "int", "pitch"}},
+                                {{"id": "option_2", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant", "coordinates": "Best coordinates to see the location", "fov": "int", "heading": "int", "pitch"}},
+                                {{"id": "option_3", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant", "coordinates": "Best coordinates to see the location", "fov": "int", "heading": "int", "pitch"}}
                             ]
                         }}
 
                         RULES:
+                        - The coordinates, fov, heading and picth must be the best in order to fully put in advantage that place, meaning the most important angle and frame of that place from outside to inside
                         - The options must be relevant to the user personality reflected through Qloo recommendations
                         - The Qloo recommendations are just as valuable in selecting the most appropriate option
                         - Do not mention the Qloo recommendations as explicit from Qloo, instead treat them as if the user was the one who input them and maybe value them more, 
@@ -66,6 +80,8 @@ class ClaudeService:
                         - The activity description should be detailed and specific, including many elements of what the user actually likes or that are recommended by Qloo to them
                         - When reasoning, use second person addressing, as talking directly with the user
                         - The addresses should match the style of the ones received from Google Places API
+                        - Air quality should be a factor in choosing activities and mentioned when is affects
+                        - Pollen should be a factor in choosing activities and mentioned when is affects
                         - Weather on that day factors in the activity choosing reasoning, if it exists and mention when weather affects activities
                         - The Google Places API recommendations are important, but if there is a better option that isn't linked to Google Places, consider it better
                         - The reasoning should be short and clear, not more than a sentence
