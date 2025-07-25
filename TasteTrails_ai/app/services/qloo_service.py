@@ -14,6 +14,47 @@ class QlooService:
         except Exception as e:
             return []
 
+    async def get_city_recommendations(self, itinerary_cities: List[str], limits: int):
+        try:
+
+            if not itinerary_cities:
+                return {
+                    "success": False,
+                    "error": "Cities list cannot be empty",
+                    "recommended_cities": []
+                }
+
+            clean_cities = [city.strip() for city in itinerary_cities if city and city.strip()]
+
+            if not clean_cities:
+                return {
+                    "success": False,
+                    "error": "No valid cities provided",
+                    "recommended_cities": []
+                }
+
+            result = await self.client.get_recommendations(clean_cities, "destination", limits)
+
+            if result.get("success"):
+                return {
+                    "success": True,
+                    "input_cities": clean_cities,
+                    "recommended_cities": result.get("recommendations", [])
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": result.get("error", "Failed to get city recommendations"),
+                    "recommended_cities": []
+                }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to get city recommendations: {str(e)}",
+                "recommended_cities": []
+            }
+
+
     async def get_recommendations(self, user_preferences: Dict[str, List[str]], limits: int) -> Dict[str, Any]:
         try:
             results = {
