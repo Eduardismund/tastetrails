@@ -5,6 +5,7 @@ import { faArrowLeft, faMapLocationDot } from "@fortawesome/free-solid-svg-icons
 import type {FormField, SignInFormData} from "../types/interfaces.ts";
 import GenericForm from "../components/GenericForm.tsx";
 import './AuthenticatePage.css';
+// @ts-expect-error
 import {useScrollToTop} from "../hooks/useScrollToTop";
 
 const SignInPage: React.FC = () => {

@@ -90,6 +90,46 @@ class QlooService:
                 ))
                 task_names.append("movies")
 
+            if "brands" in user_preferences and user_preferences["brands"]:
+                tasks.append(self.client.get_recommendations(
+                    user_preferences["brands"],
+                    "brand",
+                    limits
+                ))
+                task_names.append("brands")
+
+            if "video_games" in user_preferences and user_preferences["video_games"]:
+                tasks.append(self.client.get_recommendations(
+                    user_preferences["video_games"],
+                    "videogame",
+                    limits
+                ))
+                task_names.append("video_games")
+
+            if "tv_shows" in user_preferences and user_preferences["tv_shows"]:
+                tasks.append(self.client.get_recommendations(
+                    user_preferences["tv_shows"],
+                    "tv_show",
+                    limits
+                ))
+                task_names.append("tv_shows")
+
+            if "podcasts" in user_preferences and user_preferences["podcasts"]:
+                tasks.append(self.client.get_recommendations(
+                    user_preferences["podcasts"],
+                    "podcast",
+                    limits
+                ))
+                task_names.append("podcasts")
+
+            if "persons" in user_preferences and user_preferences["persons"]:
+                tasks.append(self.client.get_recommendations(
+                    user_preferences["persons"],
+                    "person",
+                    limits
+                ))
+                task_names.append("persons")
+
             if tasks:
                 tasks_results = await asyncio.gather(*tasks, return_exceptions=True)
 

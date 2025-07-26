@@ -38,6 +38,14 @@ public class Itinerary {
     @Column(nullable=false)
     private String destination;
 
+    @NotBlank(message = "Coordinates are mandatory")
+    @Column(nullable=false)
+    private String coordinates;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "bounds", columnDefinition = "json")
+    private List<String> bounds; // ["ne_lat,ne_lng", "sw_lat,sw_lng"]
+
     @NotNull(message = "Start date is mandatory")
     @Column(name = "start_date", nullable=false)
     private LocalDate startDate;

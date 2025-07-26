@@ -13,6 +13,12 @@ public class CreateItineraryRequest {
     @NotBlank(message = "Destination is mandatory")
     private String destination;
 
+    @NotBlank(message = "Coordinates are mandatory")
+    private String coordinates;
+
+    @NotNull(message = "Bounds are mandatory")
+    private List<String> bounds;
+
     @NotNull(message = "Start date is mandatory")
     private LocalDate startDate;
 

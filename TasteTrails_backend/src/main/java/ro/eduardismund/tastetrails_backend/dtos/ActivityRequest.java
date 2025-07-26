@@ -16,6 +16,9 @@ public class ActivityRequest {
     @NotBlank(message="Description is mandatory")
     private String title;
 
+    @NotBlank(message="Coordinates are mandatory")
+    private String coordinates;
+
     @NotNull(message="Theme is mandatory")
     private ThematicType theme;
 

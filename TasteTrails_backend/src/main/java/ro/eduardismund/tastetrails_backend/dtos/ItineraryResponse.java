@@ -16,6 +16,8 @@ public class ItineraryResponse {
     private UUID id;
     private UUID userId;
     private String destination;
+    private String coordinates;
+    private List<String> bounds;
     private LocalDate startDate;
     private LocalDate endDate;
     private List<ActivityResponse> activities;
@@ -26,6 +28,8 @@ public class ItineraryResponse {
                 .id(itinerary.getId())
                 .userId(itinerary.getUser().getId())
                 .destination(itinerary.getDestination())
+                .coordinates(itinerary.getCoordinates())
+                .bounds(itinerary.getBounds())
                 .startDate(itinerary.getStartDate())
                 .endDate(itinerary.getEndDate())
                 .activities(itinerary.getActivities()!= null ? itinerary.getActivities().stream().map(ActivityResponse::fromActivity).toList() : new ArrayList<>())

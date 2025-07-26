@@ -38,6 +38,10 @@ public class Activity {
     @Column(name = "title", nullable=false)
     private String title;
 
+    @NotBlank(message = "Title is mandatory")
+    @Column(name = "coordinates", nullable=false)
+    private String coordinates;
+
     @NotBlank(message = "Description is mandatory")
     @Column(name = "description", nullable=false)
     private String description;

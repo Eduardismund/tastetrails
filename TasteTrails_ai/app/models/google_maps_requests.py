@@ -36,11 +36,10 @@ class RoutesRequest(BaseModel):
 # noinspection PyArgumentList
 class VenueRequest(BaseModel):
     """Request model for venue search near a location."""
-    location: str = Field(
+    coordinates: str = Field(
         ...,
         min_length=1,
-        description="Location to search for venues near",
-        example="Paris, France"
+        description="Coordinates to search for venues near"
     )
     radius: Optional[float] = Field(
         default=10000.0,
@@ -60,11 +59,10 @@ class VenueRequest(BaseModel):
 # noinspection PyArgumentList
 class WeatherRequest(BaseModel):
     """Request model for weather forecast."""
-    location: str = Field(
+    coordinates: str = Field(
         ...,
         min_length=1,
-        description="Location to get weather forecast for",
-        example="London, UK"
+        description="Coordinates to get weather forecast for",
     )
     days_ahead: Optional[int] = Field(
         default=0,
@@ -77,11 +75,10 @@ class WeatherRequest(BaseModel):
 # noinspection PyArgumentList
 class AirQualityRequest(BaseModel):
     """Request model for weather forecast."""
-    location: str = Field(
+    coordinates: str = Field(
         ...,
         min_length=1,
         description="Location to get weather forecast for",
-        example="London, UK"
     )
     start_hour: str
     end_hour: str
@@ -89,11 +86,10 @@ class AirQualityRequest(BaseModel):
 
 # noinspection PyArgumentList
 class PollenQualityRequest(BaseModel):
-    location: str = Field(
+    coordinates: str = Field(
         ...,
         min_length=1,
         description="Location to get weather forecast for",
-        example="London, UK"
     )
     target_date: str
 

@@ -42,6 +42,7 @@ async def claude_generate_options(request: dict):
         claude_result = await claude_service.generate_activity(
             request["user_preferences"],
             request["city"],
+            request["coordinates"],
             request["start_time"],
             request["end_time"],
             request["date"],

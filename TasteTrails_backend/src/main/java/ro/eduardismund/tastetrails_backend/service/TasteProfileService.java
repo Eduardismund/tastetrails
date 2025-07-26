@@ -20,7 +20,16 @@ public class TasteProfileService {
     private final UserRepository userRepository;
     private final TasteProfileRepository tasteProfileRepository;
 
-    public TasteProfile createOrUpdateTasteProfile(UUID userId, Map<String, Object> artistPrefs, Map<String, Object> moviePrefs, Map<String, Object> bookPrefs){
+    public TasteProfile createOrUpdateTasteProfile(UUID userId,
+                                                   Map<String, Object> artistPrefs,
+                                                   Map<String, Object> moviePrefs,
+                                                   Map<String, Object> bookPrefs,
+                                                   Map<String, Object> brandPrefs,
+                                                   Map<String, Object> videoGamePrefs,
+                                                   Map<String, Object> tvShowPrefs,
+                                                   Map<String, Object> podcastPrefs,
+                                                   Map<String, Object> personPrefs
+    ){
         final var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
@@ -34,6 +43,11 @@ public class TasteProfileService {
         profile.setArtistPreferences(artistPrefs);
         profile.setMoviePreferences(moviePrefs);
         profile.setBookPreferences(bookPrefs);
+        profile.setBrandPreferences(brandPrefs);
+        profile.setVideoGamePreferences(videoGamePrefs);
+        profile.setTvShowPreferences(tvShowPrefs);
+        profile.setPodcastPreferences(podcastPrefs);
+        profile.setPersonPreferences(personPrefs);
 
         return tasteProfileRepository.save(profile);
 

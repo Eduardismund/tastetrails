@@ -29,6 +29,11 @@ async def get_recommendations(request: TravelRecommendationsRequest):
             "artists": request.user_preferences.artists,
             "books": request.user_preferences.books,
             "movies": request.user_preferences.movies,
+            "brands": request.user_preferences.brands,
+            "video_games": request.user_preferences.video_games,
+            "tv_shows": request.user_preferences.tv_shows,
+            "podcasts": request.user_preferences.podcasts,
+            "persons": request.user_preferences.persons,
         }
 
         preference_dict = {k: v for k, v in preference_dict.items() if v}

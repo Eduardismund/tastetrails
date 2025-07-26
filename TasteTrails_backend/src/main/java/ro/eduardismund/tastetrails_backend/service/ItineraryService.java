@@ -21,7 +21,7 @@ public class ItineraryService {
     private final UserRepository userRepository;
     private final ItineraryRepository itineraryRepository;
 
-    public Itinerary createItinerary(UUID userId, String destination, LocalDate startDate, LocalDate endDate) {
+    public Itinerary createItinerary(UUID userId, String destination, String coordinates, List<String> bounds, LocalDate startDate, LocalDate endDate) {
 
         final var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
@@ -33,6 +33,8 @@ public class ItineraryService {
         final var itinerary = Itinerary.builder()
                 .user(user)
                 .destination(destination)
+                .coordinates(coordinates)
+                .bounds(bounds)
                 .startDate(startDate)
                 .endDate(endDate)
                 .build();
@@ -41,16 +43,16 @@ public class ItineraryService {
 
     }
 
-    @Transactional(readOnly = true)  // ← Added readOnly for performance
+    @Transactional(readOnly = true)
     public List<Itinerary> findByUserId(UUID userId) {
         return itineraryRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    @Transactional(readOnly = true)  // ← Added readOnly for performance
+    @Transactional(readOnly = true)
     public List<Itinerary> findUpcomingItineraries(UUID userId) {
         return itineraryRepository.findUpcomingItinerariesByUserId(userId, LocalDate.now());
     }
-    @Transactional(readOnly = true)  // ← Added readOnly for performance
+    @Transactional(readOnly = true)
     public Optional<Itinerary> findById(UUID itineraryId) {
         return itineraryRepository.findById(itineraryId);
     }

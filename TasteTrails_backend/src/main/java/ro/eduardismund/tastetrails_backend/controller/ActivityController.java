@@ -26,6 +26,7 @@ public class ActivityController {
             final var activity = activityService.createActivity(
                     itineraryId,
                     request.getTitle(),
+                    request.getCoordinates(),
                     request.getDescription(),
                     request.getStartTime(),
                     request.getEndTime(),
@@ -72,6 +73,7 @@ public class ActivityController {
             final var activity = activityService.updateActivity(
                     activityId,
                     request.getTitle(),
+                    request.getCoordinates(),
                     request.getDescription(),
                     request.getStartTime(),
                     request.getEndTime(),

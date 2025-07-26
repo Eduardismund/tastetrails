@@ -1,11 +1,15 @@
 import json
+import logging
 from datetime import datetime, date
+from typing import Dict, List, Any
 
 from fastapi import HTTPException
 
 from app.clients.claude_client import claude_client
 from app.services.google_maps_service import google_maps_service
 from app.services.qloo_service import qloo_service
+
+logger = logging.getLogger(__name__)
 
 
 class ClaudeService:
@@ -16,43 +20,48 @@ class ClaudeService:
     def __init__(self):
         self.client = claude_client
 
-
-    async def generate_activity(self, user_preferences, city, start_time, end_time, activity_date, theme, existing_activities):
-        """Generate a set of proposed activities based on user's preferences"""
+    async def generate_activity(self, user_preferences, city, coordinates,start_time, end_time, activity_date, theme,
+                                existing_activities):
         try:
             cultural_profile = await qloo_service.get_recommendations(user_preferences, 5)
 
             if not cultural_profile.get("success"):
                 raise HTTPException(status_code=500, detail="Qloo failed")
 
-            nearby_venues = await google_maps_service.find_venues_near_location(city)
+            nearby_venues = await google_maps_service.find_venues_near_location(coordinates)
 
-            if not cultural_profile.get("success"):
+            if not nearby_venues.get("success"):
+                logger.error(f"Google Maps venues failed: {nearby_venues.get('error')}")
                 raise HTTPException(status_code=500, detail="Google Maps failed")
 
             target_date = datetime.strptime(activity_date, "%Y-%m-%d").date()
-
             today = date.today()
+            days_diff = (target_date - today).days
 
-            weather_info = await google_maps_service.get_weather_forecast_for_location(city, (target_date - today).days)
+            weather_info = await google_maps_service.get_weather_forecast_for_location(coordinates, days_diff)
 
             if not weather_info.get("success"):
-                raise HTTPException(status_code=500, detail="Google Maps failed")
+                logger.warning(f"Weather API failed: {weather_info.get('error')}")
 
 
-            air_quality_info = await google_maps_service.get_hourly_air_quality_range_for_location(city, start_time, end_time, str(target_date))
+            air_quality_info = await google_maps_service.get_hourly_air_quality_range_for_location(coordinates, start_time,
+                                                                                                   end_time,
+                                                                                                   str(target_date))
 
             if not air_quality_info.get("success"):
-                raise HTTPException(status_code=500, detail="Google Maps failed")
+                logger.warning(f"Air quality failed: {air_quality_info.get('error')}")
+            else:
+                logger.info("Air quality information retrieved successfully")
 
-            pollen_info = await google_maps_service.get_pollen_forecast_for_location(city, str(target_date))
+            pollen_info = await google_maps_service.get_pollen_forecast_for_location(coordinates, str(target_date))
 
             if not pollen_info.get("success"):
-                raise HTTPException(status_code=500, detail="Google Maps failed")
-
+                logger.warning(f"Pollen forecast failed: {pollen_info.get('error')}")
+            else:
+                logger.info("Pollen information retrieved successfully")
 
             prompt = f"""
-                        Have the mindset of an expert trip advisor for {theme} that knows all the activities and periodic events in the city {city}, between the time period: {start_time} to {end_time} on date {date}.
+                        Have the mindset of an expert trip advisor for {theme} that knows all the activities and periodic events in the city {city}, between the time period: {start_time} to {end_time} on date {activity_date}.
                         Google Places API recommends the following: {nearby_venues}
                         The air quality is the following: {air_quality_info}
                         The pollen forecast is the following: {pollen_info}
@@ -64,14 +73,14 @@ class ClaudeService:
                         Return only this JSON format:
                         {{
                             "options": [
-                                {{"id": "option_1", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant", "coordinates": "Best coordinates to see the location", "fov": "int", "heading": "int", "pitch"}},
-                                {{"id": "option_2", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant", "coordinates": "Best coordinates to see the location", "fov": "int", "heading": "int", "pitch"}},
-                                {{"id": "option_3", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant", "coordinates": "Best coordinates to see the location", "fov": "int", "heading": "int", "pitch"}}
+                                {{"id": "option_1", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant", "coordinates": "Best coordinates to see the location", "heading": 0, "pitch": 0}},
+                                {{"id": "option_2", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant", "coordinates": "Best coordinates to see the location", "heading": 0, "pitch": 0}},
+                                {{"id": "option_3", "name": "Relevant name for activity", "activity": "What to do", "location": "Where", "cultural_score": 0-100, "reasoning": "Reason why this activity is relevant", "coordinates": "Best coordinates to see the location", "heading": 0, "pitch": 0}}
                             ]
                         }}
 
                         RULES:
-                        - The coordinates, fov, heading and picth must be the best in order to fully put in advantage that place, meaning the most important angle and frame of that place from outside to inside
+                        - The coordinates, heading and pitch must be the best in order to fully put in advantage that place, prioritize the view from the street directly to the place
                         - The options must be relevant to the user personality reflected through Qloo recommendations
                         - The Qloo recommendations are just as valuable in selecting the most appropriate option
                         - Do not mention the Qloo recommendations as explicit from Qloo, instead treat them as if the user was the one who input them and maybe value them more, 
@@ -104,9 +113,7 @@ class ClaudeService:
                 return {"success": False, "error": result.get("error")}
 
         except Exception as e:
-            return {"success" : False, "error" : str(e)}
-
-
+            return {"success": False, "error": str(e)}
 
     async def generate_options_today(self, user_preferences, itinerary_cities):
         try:

@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from typing import Dict, Any, Optional, List
 
 import httpx
@@ -61,14 +61,7 @@ class GoogleMapsClient:
 
                 return {
                     "success": True,
-                    "location": location,
                     "image_url": image_url,
-                    "image_size": size,
-                    "parameters": {
-                        "fov": fov,
-                        "heading": heading,
-                        "pitch": pitch
-                    }
                 }
 
         except httpx.HTTPStatusError as e:
@@ -82,12 +75,9 @@ class GoogleMapsClient:
                 "error": str(e)
             }
 
-    async def get_hourly_air_quality_range(self, location: str, start_datetime, end_datetime, target_date: str) -> Dict[str, Any]:
-        geocode_result = await self.geocode_address(location)
-        if not geocode_result:
-            return []
+    async def get_hourly_air_quality_range(self, coordinates: str, start_datetime, end_datetime, target_date: str) -> Dict[str, Any]:
 
-        lat, lng = geocode_result["latitude"], geocode_result["longitude"]
+        lat, lng = coordinates.strip().split(',')
         try:
 
             hours_in_range = int((end_datetime - start_datetime).total_seconds() / 3600)
@@ -113,17 +103,13 @@ class GoogleMapsClient:
                 "universalAqi": True
             }
 
-            params = {
-                "key": self.api_key,
-            }
-
             async with httpx.AsyncClient(timeout=self.timeout) as client:
 
                 response = await client.post(
                     url=url,
-                    params=params,
                     headers={
                         "Content-Type": "application/json",
+                        "X-Goog-Api-Key": self.api_key,
                         "Accept-Language": "en"
                     },
                     json=request_body
@@ -133,23 +119,16 @@ class GoogleMapsClient:
 
                 data = response.json()
 
-                return self._parse_air_quality_data(data, target_date, start_datetime, end_datetime, location)
+                return self._parse_air_quality_data(data, start_datetime, end_datetime)
         except httpx.HTTPStatusError as e:
             return {"success": False, "error": f"API error: {e.response.status_code}"}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def get_pollen_forecast(self, location: str, days_offset: int) -> Dict[str, Any]:
+    async def get_pollen_forecast(self, coordinates: str, days_offset: int) -> Dict[str, Any]:
 
         try:
-            geocode_result = await self.geocode_address(location)
-            if not geocode_result:
-                return {
-                    "success": False,
-                    "error": "Location not found"
-                }
-
-            lat, lng = geocode_result["latitude"], geocode_result["longitude"]
+            lat, lng = coordinates.strip().split(',')
 
             url = "https://pollen.googleapis.com/v1/forecast:lookup"
 
@@ -173,19 +152,15 @@ class GoogleMapsClient:
 
                 data = response.json()
 
-                return self._parse_pollen_data(data, location, days_offset)
+                return self._parse_pollen_data(data, days_offset)
         except httpx.HTTPStatusError as e:
             return {"success": False, "error": f"API error: {e.response.status_code}"}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def search_nearby_places(self, location: str, radius: float = 10000.0, max_results: int = 20) -> List[Dict[str, Any]]:
+    async def search_nearby_places(self, coordinates: str, radius: float = 10000.0, max_results: int = 20) -> List[Dict[str, Any]]:
         try:
-            geocode_result = await self.geocode_address(location)
-            if not geocode_result:
-                return []
-
-            lat, lng = geocode_result["latitude"], geocode_result["longitude"]
+            lat, lng = coordinates.strip().split(',')
 
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 url = "https://places.googleapis.com/v1/places:searchNearby"
@@ -310,33 +285,41 @@ class GoogleMapsClient:
 
                 result = results[0]
                 location = result["geometry"]["location"]
+                geometry = result["geometry"]
+
+                bounds = {
+                    "northeast": {
+                        "lat": geometry["bounds"]["northeast"]["lat"],
+                        "lng": geometry["bounds"]["northeast"]["lng"]
+                    },
+                    "southwest": {
+                        "lat": geometry["bounds"]["southwest"]["lat"],
+                        "lng": geometry["bounds"]["southwest"]["lng"]
+                    }
+                }
 
                 return {
                     "success": True,
                     "coordinates": f"{location['lat']},{location['lng']}",
                     "types": result.get("types", []),
                     "latitude": location['lat'],
-                    "longitude": location['lng'],
+                    "bounds": bounds,
+                    "longitude": location['lng']
                 }
         except httpx.HTTPStatusError as e:
             return None
         except Exception as e:
             return None
 
-    async def get_weather_forecast(self, location: str, days_ahead: int) -> Dict[str, Any]:
+    async def get_weather_forecast(self, coordinates: str, days_ahead: int) -> Dict[str, Any]:
 
         if days_ahead < 0 or days_ahead > 9:
             return {"success": False,
                     "error": "days_ahead must be between 0 and 9"}
 
         try:
-            geocode_result = await self.geocode_address(location)
 
-            if not geocode_result:
-                return {"success": False,
-                        "error": "Location not found"}
-
-            lat, lng = geocode_result["latitude"], geocode_result["longitude"]
+            lat, lng = coordinates.strip().split(',')
 
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 url = "https://weather.googleapis.com/v1/forecast/days:lookup"
@@ -361,13 +344,13 @@ class GoogleMapsClient:
         except Exception as e:
             return {"success": False, "error": e}
 
-    def _parse_pollen_data(self, data: Dict, location: str, days_from_today: int) -> Dict[str, Any]:
+    def _parse_pollen_data(self, data: Dict, days_from_today: int) -> Dict[str, Any]:
         try:
             daily_info = data.get("dailyInfo", [])
             if not daily_info:
                 return {
                     "success": False,
-                    "error": "No pollen data available for this location"
+                    "error": "No pollen data available for this coordinates"
                 }
 
             day_data = daily_info[days_from_today]
@@ -377,7 +360,7 @@ class GoogleMapsClient:
                 code = pollen_type.get("code", "").lower()
                 index_info = pollen_type.get("indexInfo", {})
 
-                if index_info:  # Only include if there's actual data
+                if index_info:
                     pollen_summary[code] = {
                         "level": index_info.get("value", 0),
                         "category": index_info.get("category", "Unknown"),
@@ -405,7 +388,6 @@ class GoogleMapsClient:
 
             return {
                 "success": True,
-                "location": location,
                 "days_from_today": days_from_today,
                 "overall_level": overall_level,
                 "worst_pollen_type": worst_pollen_type,
@@ -418,7 +400,7 @@ class GoogleMapsClient:
                 "success": False,
                 "error": f"Error parsing pollen data: {str(e)}"
             }
-    def _parse_air_quality_data(self, data: Dict, target_date: str, start_datetime, end_datetime, location: str) -> Dict[str, Any]:
+    def _parse_air_quality_data(self, data: Dict, start_datetime, end_datetime) -> Dict[str, Any]:
         try:
             forecasts = data.get("hourlyForecasts", [])
             if not forecasts:
@@ -468,8 +450,6 @@ class GoogleMapsClient:
 
             return {
                 "success": True,
-                "location": location,
-                "date": target_date,
                 "average_aqi": avg_aqi,
                 "min_aqi": min_aqi,
                 "max_aqi": max_aqi,

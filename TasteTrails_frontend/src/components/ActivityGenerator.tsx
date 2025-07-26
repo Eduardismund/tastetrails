@@ -13,6 +13,7 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
                                                                  itineraryStartDate,
                                                                  itineraryEndDate,
                                                                  itineraryDestination,
+                                                                 itineraryCoordinates,
                                                                  userId,
                                                                  itineraryId,
                                                                  timeSlot,
@@ -88,6 +89,21 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
         if (tasteProfile.bookPreferences?.books) {
             userPreferences.books = tasteProfile.bookPreferences.books
         }
+        if (tasteProfile.brandPreferences?.brands) {
+            userPreferences.brands = tasteProfile.brandPreferences.brands
+        }
+        if (tasteProfile.videoGamePreferences?.videoGames) {
+            userPreferences.videoGames = tasteProfile.videoGamePreferences.videoGames
+        }
+        if (tasteProfile.tvShowPreferences?.tvShows) {
+            userPreferences.tvShows = tasteProfile.tvShowPreferences.tvShows
+        }
+        if (tasteProfile.podcastPreferences?.podcasts) {
+            userPreferences.podcasts = tasteProfile.podcastPreferences.podcasts
+        }
+        if (tasteProfile.personPreferences?.persons) {
+            userPreferences.persons = tasteProfile.personPreferences.persons
+        }
 
         return userPreferences
     }
@@ -121,6 +137,7 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
         setTimeConflict(null);
 
         try {
+
             const activities = await getExistingActivities(itineraryId);
             setExistingActivities(activities);
 
@@ -151,6 +168,7 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
             const claudeRequest: GenerateOptionsRequest = {
                 user_preferences: userPreferences,
                 city: itineraryDestination,
+                coordinates: itineraryCoordinates,
                 start_time: timeSlot.start_time,
                 end_time: timeSlot.end_time,
                 date: timeSlot.date,

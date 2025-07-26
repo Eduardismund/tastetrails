@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
-import './App.css'
 import RegisterPage from "./pages/RegisterPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import DashboardPage from "./pages/DashboardPage.tsx";

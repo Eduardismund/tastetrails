@@ -68,7 +68,7 @@
 }
 
 .itinerary-list-header {
-    padding: 2rem 2rem 1.5rem 2rem;
+    padding: 1rem 1rem 1rem 1rem;
     border-bottom: 1px solid var(--glass-border);
     background: rgba(255, 255, 255, 0.05);
 }
@@ -95,7 +95,7 @@
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
-    padding: 1.5rem;
+    padding: 1rem;
     margin-bottom: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;

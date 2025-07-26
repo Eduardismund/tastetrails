@@ -12,6 +12,7 @@ import type {ApiResponse, Itinerary} from "../types/interfaces.ts";
 import './ItineraryPage.css';
 
 const ItineraryPage: React.FC = () => {
+    const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     const navigate = useNavigate();
     const {userId} = useParams<{userId: string}>();
     const [itineraries, setItineraries] = useState<Itinerary[]>([]);
@@ -128,9 +129,61 @@ const ItineraryPage: React.FC = () => {
         }
     ];
 
+    const checkCityExistence =  async(
+        address: string
+    ) => {
+        if (!address) {
+            return { exists: false, bounds: null, coordinates: null };
+        }
+
+        try{
+
+            const isCityResponse = await fetch(`http://localhost:8001/api/is-city`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ address: address })
+            });
+
+            if (!isCityResponse.ok) {
+                throw new Error('Failed to generate activity options');
+            }
+
+            const response = await isCityResponse.json();
+
+            if (response.success && response.city) {
+                return {
+                    exists: true,
+                    bounds: response.bounds,
+                    coordinates: response.coordinates
+                };
+            }
+            return {
+                exists: false,
+                bounds: null,
+                coordinates: null
+            };
+
+        } catch (error) {
+            console.error('City validation error:', error);
+            return {
+                exists: false,
+                bounds: null,
+                coordinates: null
+            };
+        }
+    };
+
     const handleCreateItinerary = async (formData: CreateItineraryFormData) => {
         if (!userId) {
             throw new Error('User ID is required');
+        }
+
+        const cityCheck = await checkCityExistence(formData.destination);
+
+        if (!cityCheck.exists) {
+            throw new Error(`"${formData.destination}" is not a recognized city. Please enter a valid city name.`);
         }
 
         const startDate = new Date(formData.startDate);
@@ -153,6 +206,8 @@ const ItineraryPage: React.FC = () => {
             },
             body: JSON.stringify({
                 destination: formData.destination,
+                coordinates: cityCheck.coordinates,
+                bounds: cityCheck.bounds,
                 startDate: formData.startDate,
                 endDate: formData.endDate
             })
@@ -207,6 +262,8 @@ const ItineraryPage: React.FC = () => {
                         itineraries={itineraries}
                         selectedId={selectedItinerary?.id || null}
                         onSelect={handleItinerarySelect}
+                        googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+
                     />
                 </aside>
 
@@ -248,6 +305,7 @@ const ItineraryPage: React.FC = () => {
                                     itineraryStartDate={selectedItinerary.startDate}
                                     itineraryEndDate={selectedItinerary.endDate}
                                     itineraryDestination={selectedItinerary.destination}
+                                    itineraryCoordinates={selectedItinerary.coordinates}
                                     userId={userId}
                                     itineraryId={selectedItinerary.id}
                                     timeSlot={timeSlot}
@@ -259,19 +317,23 @@ const ItineraryPage: React.FC = () => {
                                 />
                             )}
 
-                            <ActivityOptions
-                                options={activityOptions}
-                                itineraryId={selectedItinerary.id}
-                                selectedTheme={selectedTheme}
-                                timeSlot={timeSlot}
-                                onActivityAdded={handleActivityAdded}
-                                onError={handleError}
-                                onClearOptions={handleClearOptions}
-                            />
                         </div>
                     )}
                 </div>
             </main>
+            {selectedItinerary && (
+                <ActivityOptions
+                    options={activityOptions}
+                    itineraryId={selectedItinerary.id}
+                    itineraryBounds={selectedItinerary.bounds}
+                    googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+                    selectedTheme={selectedTheme}
+                    timeSlot={timeSlot}
+                    onActivityAdded={handleActivityAdded}
+                    onError={handleError}
+                    onClearOptions={handleClearOptions}
+                />
+            )}
         </div>
     );
 };
