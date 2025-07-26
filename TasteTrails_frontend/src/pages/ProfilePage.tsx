@@ -7,7 +7,12 @@ import {
     faMusic,
     faSpinner,
     faBook,
-    faFilm
+    faFilm,
+    faGamepad,
+    faTv,
+    faMicrophone,
+    faUser,
+    faTag
 } from "@fortawesome/free-solid-svg-icons";
 import './ProfilePage.css';
 import ItemListManager from "../components/ItemListManager.tsx";
@@ -17,8 +22,13 @@ const ProfilePage: React.FC = () => {
     const {userId} = useParams<{userId: string}>()
     const [preferences, setPreferences] = useState({
         artists: [] as string[],
+        movies: [] as string[],
         books: [] as string[],
-        movies: [] as string[]
+        brands: [] as string[],
+        videoGames: [] as string[],
+        tvShows: [] as string[],
+        podcasts: [] as string[],
+        persons: [] as string[]
     });
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -42,11 +52,21 @@ const ProfilePage: React.FC = () => {
                 const existingArtists = data.data?.artistPreferences?.artists || []
                 const existingMovies = data.data?.moviePreferences?.movies || []
                 const existingBooks = data.data?.bookPreferences?.books || []
+                const existingBrands = data.data?.brandPreferences?.brands || []
+                const existingVideoGames = data.data?.videoGamePreferences?.videoGames || []
+                const existingTvShows = data.data?.tvShowPreferences?.tvShows || []
+                const existingPodcasts = data.data?.podcastPreferences?.podcasts || []
+                const existingPersons = data.data?.personPreferences?.persons || []
 
                 setPreferences({
                     artists: existingArtists,
                     movies: existingMovies,
-                    books: existingBooks
+                    books: existingBooks,
+                    brands: existingBrands,
+                    videoGames: existingVideoGames,
+                    tvShows: existingTvShows,
+                    podcasts: existingPodcasts,
+                    persons: existingPersons,
                 })
             } else if(response.status === 404){
                 console.log("No existing profiles found!")
@@ -83,16 +103,18 @@ const ProfilePage: React.FC = () => {
         }
 
         const filteredArtists = preferences.artists.filter(artist => artist.trim() !== '');
-        const filteredBooks = preferences.books.filter(book => book.trim() !== '');
         const filteredMovies = preferences.movies.filter(movie => movie.trim() !== '');
+        const filteredBooks = preferences.books.filter(book => book.trim() !== '');
+        const filteredBrands = preferences.brands.filter(book => book.trim() !== '');
+        const filteredVideoGames = preferences.videoGames.filter(book => book.trim() !== '');
+        const filteredTvShows = preferences.tvShows.filter(book => book.trim() !== '');
+        const filteredPodcasts = preferences.podcasts.filter(book => book.trim() !== '');
+        const filteredPersons = preferences.persons.filter(book => book.trim() !== '');
 
-        console.log('Filtered data:', {
-            artists: filteredArtists,
-            movies: filteredMovies,
-            books: filteredBooks
-        });
 
-        if(filteredArtists.length === 0 && filteredBooks.length === 0 && filteredMovies.length === 0) {
+        if(filteredArtists.length === 0 && filteredBooks.length === 0 && filteredMovies.length === 0
+        && filteredBrands.length === 0 && filteredVideoGames.length === 0 && filteredTvShows.length === 0
+            && filteredPodcasts.length === 0 && filteredPersons.length === 0) {
             setError('Please add at least one item to any category');
             return;
         }
@@ -108,15 +130,17 @@ const ProfilePage: React.FC = () => {
                 },
                 body: JSON.stringify({
                     artistPreferences: {artists: filteredArtists},
+                    moviePreferences: {movies : filteredMovies},
                     bookPreferences: {books: filteredBooks},
-                    moviePreferences: {movies : filteredMovies}
+                    brandPreferences: {brands : filteredBrands},
+                    videoGamePreferences: {videoGames : filteredVideoGames},
+                    tvShowPreferences: {tvShows : filteredTvShows},
+                    podcastPreferences: {podcasts : filteredPodcasts},
+                    personPreferences: {persons : filteredPersons},
                 })
             });
 
-            console.log('API Response Status:', response.status);
-
             const data = await response.json();
-            console.log('API Response Data:', data);
 
             if(response.ok){
                 navigate(`/dashboard/${userId}`);
@@ -193,6 +217,18 @@ const ProfilePage: React.FC = () => {
                         />
 
                         <ItemListManager
+                            title="Favourite movies"
+                            items={preferences.movies}
+                            placeholder="Enter movie title"
+                            icon={faFilm}
+                            category="movies"
+                            isLoading={isLoading}
+                            onAddItem={handleAddItem}
+                            onRemoveItem={handleRemoveItem}
+                            addButtonText="Add Movie"
+                        />
+
+                        <ItemListManager
                             title="Favourite books"
                             items={preferences.books}
                             placeholder="Enter book title"
@@ -205,20 +241,68 @@ const ProfilePage: React.FC = () => {
                         />
 
                         <ItemListManager
-                            title="Favourite movies"
-                            items={preferences.movies}
-                            placeholder="Enter movie title"
-                            icon={faFilm}
-                            category="movies"
+                            title="Favourite brands"
+                            items={preferences.brands}
+                            placeholder="Enter brand name"
+                            icon={faTag}
+                            category="brands"
                             isLoading={isLoading}
                             onAddItem={handleAddItem}
                             onRemoveItem={handleRemoveItem}
-                            addButtonText="Add Movie"
+                            addButtonText="Add Brand"
+                        />
+
+                        <ItemListManager
+                            title="Favourite video games"
+                            items={preferences.videoGames}
+                            placeholder="Enter video game name"
+                            icon={faGamepad}
+                            category="videoGames"
+                            isLoading={isLoading}
+                            onAddItem={handleAddItem}
+                            onRemoveItem={handleRemoveItem}
+                            addButtonText="Add video game"
+                        />
+                        <ItemListManager
+                            title="Favourite TV shows"
+                            items={preferences.tvShows}
+                            placeholder="Enter TV show title"
+                            icon={faTv}
+                            category="tvShows"
+                            isLoading={isLoading}
+                            onAddItem={handleAddItem}
+                            onRemoveItem={handleRemoveItem}
+                            addButtonText="Add TV show"
+                        />
+
+                        <ItemListManager
+                            title="Favourite podcasts"
+                            items={preferences.podcasts}
+                            placeholder="Enter podcast title"
+                            icon={faMicrophone}
+                            category="podcasts"
+                            isLoading={isLoading}
+                            onAddItem={handleAddItem}
+                            onRemoveItem={handleRemoveItem}
+                            addButtonText="Add podcast"
+                        />
+                        <ItemListManager
+                            title="Favourite famous persons"
+                            items={preferences.persons}
+                            placeholder="Enter person name"
+                            icon={faUser}
+                            category="persons"
+                            isLoading={isLoading}
+                            onAddItem={handleAddItem}
+                            onRemoveItem={handleRemoveItem}
+                            addButtonText="Add person"
                         />
 
                         <button
                             type="submit"
-                            disabled={isLoading || (preferences.artists.length === 0 && preferences.movies.length === 0 && preferences.books.length === 0)}
+                            disabled={isLoading || (preferences.artists.length === 0 && preferences.movies.length === 0 && preferences.books.length === 0
+                             && preferences.brands.length === 0 && preferences.videoGames.length === 0 && preferences.tvShows.length === 0
+                            && preferences.podcasts.length === 0 && preferences.persons.length === 0)}
                             className={`submit-btn ${isLoading ? 'loading' : ''}`}>
                             {isLoading ? 'Saving Profile...' : 'Complete Profile'}
                         </button>

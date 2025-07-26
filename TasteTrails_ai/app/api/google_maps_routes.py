@@ -10,7 +10,7 @@ router = APIRouter()
 @router.post("/venues")
 async def search_venues_near_location(request: VenueRequest):
     result = await google_maps_service.find_venues_near_location(
-        request.location,
+        request.coordinates,
         request.radius,
         request.max_results
     )
@@ -46,7 +46,7 @@ async def convert_address_to_coordinates(request: AddressRequest):
 @router.post("/weather-route")
 async def get_weather_forecast(request: WeatherRequest):
     result = await google_maps_service.get_weather_forecast_for_location(
-        request.location,
+        request.coordinates,
         request.days_ahead)
 
     if not result.get("success", False):
@@ -57,7 +57,7 @@ async def get_weather_forecast(request: WeatherRequest):
 @router.post("/air-quality")
 async def get_air_quality(request: AirQualityRequest):
     result = await google_maps_service.get_hourly_air_quality_range_for_location(
-        request.location,
+        request.coordinates,
         request.start_hour,
         request.end_hour,
         request.target_date,
@@ -70,7 +70,7 @@ async def get_air_quality(request: AirQualityRequest):
 @router.post("/pollen-forecast")
 async def get_pollen_forecast(request: PollenQualityRequest):
     result = await google_maps_service.get_pollen_forecast_for_location(
-        request.location,
+        request.coordinates,
         str(request.target_date),
     )
 

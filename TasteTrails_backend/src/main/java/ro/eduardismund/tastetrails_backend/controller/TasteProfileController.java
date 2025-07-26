@@ -10,6 +10,7 @@ import ro.eduardismund.tastetrails_backend.dtos.TasteProfileRequest;
 import ro.eduardismund.tastetrails_backend.dtos.TasteProfileResponse;
 import ro.eduardismund.tastetrails_backend.service.TasteProfileService;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -26,7 +27,12 @@ public class TasteProfileController {
                     userId,
                     request.getArtistPreferences(),
                     request.getMoviePreferences(),
-                    request.getBookPreferences()
+                    request.getBookPreferences(),
+                    request.getBrandPreferences(),
+                    request.getVideoGamePreferences(),
+                    request.getTvShowPreferences(),
+                    request.getPodcastPreferences(),
+                    request.getPersonPreferences()
             );
 
             final var response = TasteProfileResponse.fromTasteProfile(profile);

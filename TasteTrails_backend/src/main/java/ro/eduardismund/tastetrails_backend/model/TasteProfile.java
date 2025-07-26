@@ -42,8 +42,24 @@ public class TasteProfile {
     private Map<String, Object> bookPreferences;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "activity_preferences", columnDefinition="jsonb")
-    private Map<String, Object> activityPreferences;
+    @Column(name = "brand_preferences", columnDefinition="jsonb")
+    private Map<String, Object> brandPreferences;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "video_game_preferences", columnDefinition="jsonb")
+    private Map<String, Object> videoGamePreferences;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "tv_show_preferences", columnDefinition="jsonb")
+    private Map<String, Object> tvShowPreferences;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "podcast_preferences", columnDefinition="jsonb")
+    private Map<String, Object> podcastPreferences;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "person_preferences", columnDefinition="jsonb")
+    private Map<String, Object> personPreferences;
 
     @UpdateTimestamp
     @Column(name = "updated_at")

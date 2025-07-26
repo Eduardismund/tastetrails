@@ -1,8 +1,37 @@
+
+
 /* === DETAILS CONTAINER === */
+
+.activity-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.activity-navigation span {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+}
+
 .itinerary-details {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+}
+
+.map-view-button{
+    padding-bottom: 0.5rem;
+}
+.itinerary-street-view {
+    padding: 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
 }
 
 /* === ITINERARY INFO === */
@@ -50,6 +79,7 @@
 
 .activities-section{
     padding: 1.3rem;
+    min-height: 380px;
 }
 /* === ACTIVITIES LIST === */
 .activities-list {
@@ -179,6 +209,7 @@
 
 /* === ADD ACTIVITY FORM === */
 .add-activity-section h4 {
+    margin-left: 3rem;
     color: white;
     font-size: 1.4rem;
     font-weight: 600;
@@ -194,29 +225,33 @@
     gap: 2rem;
 }
 
+.activity-options .choose{
+}
 /* === ACTIVITY OPTIONS === */
 .activity-options h4 {
     color: white;
     font-size: 1.4rem;
     font-weight: 600;
-    margin-bottom: 2rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 .activity-options {
-    padding: 2rem;
+    padding: 0 3rem 3rem 3rem;
     gap: 3px;
     display: flex;
     flex-direction: column;
-
+    width: 100vw;
+    position: relative;
+    left: 0;
+    margin-left: calc(-100vw + 100%);
+    box-sizing: border-box;
 }
 .options-row {
     display: flex;
     gap: 1rem;
     padding: 1rem;
-    flex-direction: column;
-
+    flex-direction: row;
 }
 
 .generator-form {

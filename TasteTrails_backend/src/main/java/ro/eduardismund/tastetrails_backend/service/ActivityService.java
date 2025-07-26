@@ -23,7 +23,7 @@ public class ActivityService {
     private final ActivityRepository activityRepository;
     private final ItineraryRepository itineraryRepository;
 
-    public Activity createActivity(UUID itineraryId, String title, String description, LocalDateTime startTime,
+    public Activity createActivity(UUID itineraryId, String title, String coordinates, String description, LocalDateTime startTime,
                                    LocalDateTime endTime, LocalDate activityDate, ThematicType theme, String address, String reasoning) {
 
         final var itinerary = itineraryRepository.findById(itineraryId)
@@ -40,6 +40,7 @@ public class ActivityService {
         final var activity = Activity.builder()
                 .itinerary(itinerary)
                 .title(title)
+                .coordinates(coordinates)
                 .description(description)
                 .theme(theme)
                 .address(address)
@@ -63,7 +64,7 @@ public class ActivityService {
         return activityRepository.findByItineraryIdOrderByActivityDateAsc(itineraryId);
     }
 
-    public Activity updateActivity(UUID activityId, String title, String description, LocalDateTime startTime,
+    public Activity updateActivity(UUID activityId, String title, String coordinates, String description, LocalDateTime startTime,
                                    LocalDateTime endTime, LocalDate activityDate, ThematicType theme, String address, String reasoning) {
         final var activity = activityRepository.findById(activityId).orElseThrow(() -> new RuntimeException("Activity Not Found"));
 
@@ -72,6 +73,7 @@ public class ActivityService {
         }
 
         activity.setTitle(title);
+        activity.setCoordinates(coordinates);
         activity.setDescription(description);
         activity.setTheme(theme);
         activity.setAddress(address);

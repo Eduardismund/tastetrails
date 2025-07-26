@@ -26,6 +26,8 @@ public class ItineraryController {
             final var itinerary = itineraryService.createItinerary(
                     userId,
                     request.getDestination(),
+                    request.getCoordinates(),
+                    request.getBounds(),
                     request.getStartDate(),
                     request.getEndDate()
             );

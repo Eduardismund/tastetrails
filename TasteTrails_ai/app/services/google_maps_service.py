@@ -14,40 +14,25 @@ class GoogleMapsService:
     def __init__(self):
         self.client = GoogleMapsClient()
 
-    async def find_venues_near_location(self, location: str, radius: float = 10000.0, max_results: int = 20) -> Dict[str, Any]:
+    async def find_venues_near_location(self, coordinates: str, radius: float = 10000.0, max_results: int = 20) -> Dict[str, Any]:
         try:
 
-            if not location or not location.strip():
-                return {
-                    "success": False,
-                    "error": "Location cannot be empty",
-                    "location": location,
-                    "venues": []
-                }
-
-            if radius <= 0 or radius > 50000:
-                return {
-                    "success": False,
-                    "error": "Radius must be between 1 and 50,000 meters",
-                    "location": location,
-                    "venues": []
-                }
 
             if max_results <= 0 or max_results > 20:
                 return {
                     "success": False,
                     "error": "Max results must be between 1 and 20",
-                    "location": location,
+                    "coordinates": coordinates,
                     "venues": []
                 }
 
-            venues = await self.client.search_nearby_places(location=location.strip(),
+            venues = await self.client.search_nearby_places(coordinates=coordinates,
                                                             radius=radius,
                                                             max_results=max_results)
 
             return {
                 "success": True,
-                "location": location,
+                "coordinates": coordinates,
                 "venues_found": len(venues),
                 "venues": venues
             }
@@ -56,7 +41,7 @@ class GoogleMapsService:
             return {
                 "success": False,
                 "error": str(e),
-                "location": location,
+                "coordinates": coordinates,
                 "venues": []
             }
 
@@ -139,9 +124,14 @@ class GoogleMapsService:
 
         city_like_types = {"locality", "administrative_area_level_3", "administrative_area_level_2"}
 
+        northeast = result.get("bounds").get("northeast")
+        southwest = result.get("bounds").get("southwest")
+
         if any(t in city_like_types for t in types):
             return {
                 "success": True,
+                "bounds": [str(northeast.get("lat"))+','+str(northeast.get("lng")), str(southwest.get("lat"))+','+str(southwest.get("lng"))],
+                "coordinates": result.get("coordinates"),
                 "city": True
             }
 
@@ -150,13 +140,13 @@ class GoogleMapsService:
             "city": False
         }
 
-    async def get_weather_forecast_for_location(self, location: str, days_ahead: int = 0) -> Dict[str, Any]:
+    async def get_weather_forecast_for_location(self, coordinates: str, days_ahead: int = 0) -> Dict[str, Any]:
 
         try:
-            if not location or not location.strip():
+            if not coordinates or not coordinates.strip():
                 return {
                     "success": False,
-                    "error": "Location cannot be empty"
+                    "error": "Coordinates cannot be empty"
                 }
 
             if days_ahead < 0 or days_ahead > 9:
@@ -166,19 +156,18 @@ class GoogleMapsService:
                 }
 
             weather_result = await self.client.get_weather_forecast(
-                location=location.strip(),
+                coordinates=coordinates,
                 days_ahead=days_ahead
             )
 
             return weather_result
 
         except Exception as e:
-            logger.error(f"Service error getting weather for {location}: {str(e)}")
             return {
                 "success": False,
                 "error": "Internal service error while getting weather forecast"
             }
-    async def get_hourly_air_quality_range_for_location(self, location: str, start_hour: str, end_hour: str, target_date: str) -> Dict[str, Any]:
+    async def get_hourly_air_quality_range_for_location(self, coordinates: str, start_hour: str, end_hour: str, target_date: str) -> Dict[str, Any]:
 
         try:
             start_datetime = datetime.strptime(f"{target_date} {start_hour}", "%Y-%m-%d %H:%M")
@@ -203,14 +192,14 @@ class GoogleMapsService:
                     "error": f"Date range is too far in future",
                     "max_date": max_date
                 }
-            if not location or not location.strip():
+            if not coordinates or not coordinates.strip():
                 return {
                     "success": False,
-                    "error": "Location cannot be empty"
+                    "error": "Coordinates cannot be empty"
                 }
 
             air_quality = await self.client.get_hourly_air_quality_range(
-                location=location.strip(),
+                coordinates=coordinates,
                 start_datetime=start_datetime,
                 end_datetime=end_datetime,
                 target_date=target_date
@@ -219,12 +208,12 @@ class GoogleMapsService:
             return air_quality
 
         except Exception as e:
-            logger.error(f"Service error getting weather for {location}: {str(e)}")
+            logger.error(f"Service error getting weather for {coordinates}: {str(e)}")
             return {
                 "success": False,
                 "error": "Internal service error while getting weather forecast"
             }
-    async def get_pollen_forecast_for_location(self, location: str,  target_date: str) -> Dict[str, Any]:
+    async def get_pollen_forecast_for_location(self, coordinates: str, target_date: str) -> Dict[str, Any]:
 
         try:
             if target_date is None:
@@ -255,14 +244,14 @@ class GoogleMapsService:
                 }
 
             air_quality = await self.client.get_pollen_forecast(
-                location=location.strip(),
+                coordinates=coordinates,
                 days_offset=days_from_today
             )
 
             return air_quality
 
         except Exception as e:
-            logger.error(f"Service error getting weather for {location}: {str(e)}")
+            logger.error(f"Service error getting weather for {coordinates}: {str(e)}")
             return {
                 "success": False,
                 "error": "Internal service error while getting weather forecast"

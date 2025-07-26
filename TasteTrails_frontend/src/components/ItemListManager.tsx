@@ -28,6 +28,11 @@ const ItemListManager: React.FC<ItemListManagerProps> = ({
             case 'artists' : return 'artist';
             case 'movies' : return 'movie';
             case 'books' : return 'book';
+            case 'brands' : return 'brand';
+            case 'videoGames' : return 'videogame';
+            case 'tvShows' : return 'tv_show';
+            case 'podcasts' : return 'podcast';
+            case 'persons' : return 'person';
             default: return category
         }
     }

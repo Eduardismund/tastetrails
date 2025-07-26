@@ -16,6 +16,8 @@ export interface Itinerary {
     id: string;
     userId: string;
     destination: string;
+    bounds: string[],
+    coordinates: string;
     startDate: string;
     endDate: string;
     activities?: Activity[];
@@ -25,6 +27,7 @@ export interface Itinerary {
 export interface Activity {
     id: string;
     title: string;
+    coordinates: string;
     description: string;
     theme: string;
     startTime: string;
@@ -45,7 +48,11 @@ export interface ActivityOption {
     start_time?: string;
     end_time?: string;
     activity_date?: string;
+    coordinates?: string;
+    heading?: number;
+    pitch?: number;
 }
+
 
 export interface ActivityResponse {
     id: string;
@@ -118,10 +125,29 @@ export interface NewItineraryForm {
 
 // === COMPONENT PROPS INTERFACES === //
 
+export interface StreetViewProps {
+    lat?: number;
+    lng?: number;
+    bounds?: string[];
+    activities?: Activity[]
+    heading?: number;
+    pitch?: number;
+    zoom?: number;
+    width?: string;
+    height?: string;
+    apiKey: string;
+    title?: string;
+    className?: string;
+    mode?: 'map' | 'streetview';
+    view?: 'options' | 'itinerary';
+}
+
+
 export interface ItineraryListProps {
     itineraries: Itinerary[];
     selectedId: string | null;
     onSelect: (itinerary: Itinerary) => void;
+    googleMapsApiKey: string;
 }
 
 export interface ItineraryDetailsProps {
@@ -155,6 +181,7 @@ export interface ActivityGeneratorProps {
     itineraryStartDate: string;
     itineraryEndDate: string;
     itineraryDestination: string;
+    itineraryCoordinates: string;
     userId: string;
     itineraryId: string;
     timeSlot: {
@@ -176,6 +203,8 @@ export interface ActivityGeneratorProps {
 export interface ActivityOptionsProps {
     options: ActivityOption[];
     itineraryId: string;
+    itineraryBounds: string[];
+    googleMapsApiKey: string;
     selectedTheme: string;
     timeSlot: {
         start_time: string;
@@ -191,14 +220,25 @@ export interface ActivityOptionsProps {
 
 export interface UserPreferences {
     artists?: string[];
-    books?: string[];
     movies?: string[];
+    books?: string[];
+    brands?: string[];
+    videoGames?: string[];
+    tvShows?: string[];
+    podcasts?: string[];
+    persons?: string[];
+
 }
 
 export interface TasteProfile {
     artistPreferences?: { artists: string[] };
     moviePreferences?: { movies: string[] };
     bookPreferences?: { books: string[] };
+    brandPreferences?: { brands: string[] };
+    videoGamePreferences?: { videoGames: string[] };
+    tvShowPreferences?: { tvShows: string[] };
+    podcastPreferences?: { podcasts: string[] };
+    personPreferences?: { persons: string[] };
 }
 
 export interface AutocompleteItem {
@@ -211,10 +251,16 @@ export interface AutocompleteItem {
 export interface GenerateOptionsRequest {
     user_preferences: {
         artists?: string[];
-        books?: string[];
         movies?: string[];
+        books?: string[];
+        brands?: string[];
+        videoGames?: string[];
+        tvShows?: string[];
+        podcasts?: string[];
+        persons?: string[];
     };
     city: string;
+    coordinates: string;
     start_time: string;
     end_time: string;
     date: string;
