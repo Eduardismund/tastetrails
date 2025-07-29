@@ -3,9 +3,8 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from app.clients.claude_client import claude_client
-from app.services.qloo_service import qloo_service
+from app.clients.redis_client import get_redis_cache
 from app.services.claude_service import claude_service
-
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +15,6 @@ router = APIRouter()
 
 @router.get("/claude/test")
 async def test_claude():
-    """Test Claude API connection"""
     try:
 
         result = await claude_client.generate(
@@ -39,6 +37,14 @@ async def test_claude():
 @router.post("/claude/generate-options")
 async def claude_generate_options(request: dict):
     try:
+        redis_cache = await get_redis_cache()
+
+        cache_key = redis_cache.generate_cache_key("claude_generate_options", request)
+
+        cached_result = await redis_cache.get_cache(cache_key)
+        if cached_result:
+            return cached_result
+
         claude_result = await claude_service.generate_activity(
             request["user_preferences"],
             request["city"],
@@ -60,7 +66,7 @@ async def claude_generate_options(request: dict):
             "options": claude_result["data"].get("options", []),
         }
 
-        logger.info(f"Final response: {response}")
+        await redis_cache.set_cache(cache_key, response, ttl_seconds=3600)
 
         return response
 
@@ -72,9 +78,18 @@ async def claude_generate_options(request: dict):
 @router.post("/claude/generate_options_today")
 async def claude_generate_options_today(request: dict):
     try:
+        redis_cache = await get_redis_cache()
+
+        cache_key = redis_cache.generate_cache_key("claude_generate_options_today", request)
+
+        cached_result = await redis_cache.get_cache(cache_key)
+        if cached_result:
+            return cached_result
+
         claude_result = await claude_service.generate_options_today(
             request["user_preferences"],
             request["itinerary_cities"],
+            request["today_date"],
         )
 
         if not claude_result:
@@ -86,7 +101,7 @@ async def claude_generate_options_today(request: dict):
             "options": claude_result["data"].get("options", []),
         }
 
-        logger.info(f"Final response: {response}")
+        await redis_cache.set_cache(cache_key, response, ttl_seconds=3600)
 
         return response
 

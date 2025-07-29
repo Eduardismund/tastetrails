@@ -7,3 +7,8 @@ class UserPreferences(BaseModel):
     artists: Optional[List[str]] = []
     books: Optional[List[str]] = []
     movies: Optional[List[str]] = []
+    brands: Optional[List[str]] = []
+    video_games: Optional[List[str]] = []
+    tv_shows: Optional[List[str]] = []
+    podcasts: Optional[List[str]] = []
+    persons: Optional[List[str]] = []

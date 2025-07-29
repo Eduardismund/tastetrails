@@ -147,6 +147,26 @@ const ProfilePage: React.FC = () => {
             }else{
                 setError(data.message || 'Failed to save')
             }
+
+            await fetch(`http://localhost:8001/api/qloo/recommendations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_preferences: {
+                        artists: filteredArtists,
+                        books: filteredBooks,
+                        movies: filteredMovies,
+                        brands: filteredBrands,
+                        video_games: filteredVideoGames,
+                        tv_shows: filteredTvShows,
+                        podcasts: filteredPodcasts,
+                        persons: filteredPersons
+                    },
+                    limit: 5
+                })
+            });
         } catch (error) {
             console.error('API Error:', error);
             setError('Network error');

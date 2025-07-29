@@ -26,55 +26,6 @@ class GoogleMapsClient:
             "X-Goog-FieldMask": "routes.duration,routes.distanceMeters"
         }
 
-    async def get_street_view_image(self, location: str, size: str = "400x400", fov: int = 90, heading: int = 0, pitch: int = 0) -> Dict[str, Any]:
-        try:
-            base_url = "https://maps.googleapis.com/maps/api/streetview"
-
-            params = {
-                "size": size,
-                "location": location.strip(),
-                "fov": fov,
-                "heading": heading,
-                "pitch": pitch,
-                "key": self.api_key
-            }
-
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                metadata_params = params.copy()
-                metadata_url = "https://maps.googleapis.com/maps/api/streetview/metadata"
-
-                metadata_response = await client.get(
-                    url=metadata_url,
-                    params=metadata_params
-                )
-
-                metadata_response.raise_for_status()
-                metadata_data = metadata_response.json()
-
-                if metadata_data.get("status") != "OK":
-                    return {
-                        "success": False,
-                        "error": f"Street View not available for this location: {metadata_data.get('status', 'Unknown error')}"
-                    }
-
-                image_url = f"{base_url}?" + "&".join([f"{k}={v}" for k, v in params.items()])
-
-                return {
-                    "success": True,
-                    "image_url": image_url,
-                }
-
-        except httpx.HTTPStatusError as e:
-            return {
-                "success": False,
-                "error": f"API error: {e.response.status_code}"
-            }
-        except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
-
     async def get_hourly_air_quality_range(self, coordinates: str, start_datetime, end_datetime, target_date: str) -> Dict[str, Any]:
 
         lat, lng = coordinates.strip().split(',')
@@ -400,68 +351,65 @@ class GoogleMapsClient:
                 "success": False,
                 "error": f"Error parsing pollen data: {str(e)}"
             }
-    def _parse_air_quality_data(self, data: Dict, start_datetime, end_datetime) -> Dict[str, Any]:
+
+    def _parse_air_quality_data(self, data: Dict, start_date, end_date) -> Dict[str, Any]:
+        """
+        Very simple air quality parser - just daily AQI averages.
+        """
         try:
+            from datetime import datetime
+
             forecasts = data.get("hourlyForecasts", [])
             if not forecasts:
-                return {
-                    "success": False,
-                    "error": "No air quality data available"
-                }
-            hourly_data=[]
-            aqi_values=[]
+                return {"success": False, "error": "No air quality data"}
+
+            daily_data = {}
 
             for forecast in forecasts:
-                if not forecast.get("indexes"):
-                    continue
-                forecast_dt_str = forecast.get("dateTime", "")
+                # Get datetime
+                dt_str = forecast.get("dateTime", "")
                 try:
-                    forecast_dt = datetime.fromisoformat(forecast_dt_str.replace("Z", "+00:00"))
+                    dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
                 except:
                     continue
-                if not (start_datetime <= forecast_dt <= end_datetime):
+
+                # Check date range
+                if not (start_date <= dt <= end_date):
                     continue
 
-                aqi_data = None
+                # Get AQI
+                aqi = None
                 for index in forecast.get("indexes", []):
                     if index.get("code") == "uaqi":
-                        aqi_data = index
+                        aqi = index.get("aqi", 0)
                         break
 
-                if not aqi_data:
+                if aqi is None:
                     continue
 
-                aqi = aqi_data.get("aqi", 0)
-                aqi_values.append(aqi)
-                hourly_data.append({
-                    "hour": forecast_dt.strftime("%H:%M"),
-                    "aqi": aqi
+                # Group by date
+                date_key = dt.strftime("%Y-%m-%d")
+                if date_key not in daily_data:
+                    daily_data[date_key] = []
+                daily_data[date_key].append(aqi)
+
+            # Calculate daily averages
+            result = []
+            for date in sorted(daily_data.keys()):
+                aqi_values = daily_data[date]
+                avg_aqi = round(sum(aqi_values) / len(aqi_values))
+                result.append({
+                    "date": date,
+                    "average_aqi": avg_aqi
                 })
-
-            if not hourly_data:
-                return {
-                    "success": False,
-                    "error": "No data for requested time range"
-                }
-
-            avg_aqi = round(sum(aqi_values) / len(aqi_values))
-            min_aqi = min(aqi_values)
-            max_aqi = max(aqi_values)
 
             return {
                 "success": True,
-                "average_aqi": avg_aqi,
-                "min_aqi": min_aqi,
-                "max_aqi": max_aqi,
-                "hourly": hourly_data
+                "daily_forecasts": result
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
-
+            return {"success": False, "error": str(e)}
 
     def _parse_weather_data_for_day(self, data: Dict, day_offset: int) -> Dict[str, Any]:
         try:
