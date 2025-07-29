@@ -43,7 +43,7 @@ public class Activity {
     private String coordinates;
 
     @NotBlank(message = "Description is mandatory")
-    @Column(name = "description", nullable=false)
+    @Column(name = "description", nullable=false, length = 400)
     private String description;
 
     @NotNull(message = "Theme is mandatory")

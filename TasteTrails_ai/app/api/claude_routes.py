@@ -6,7 +6,6 @@ from app.clients.claude_client import claude_client
 from app.clients.redis_client import get_redis_cache
 from app.services.claude_service import claude_service
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

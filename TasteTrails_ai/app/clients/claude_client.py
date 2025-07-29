@@ -1,8 +1,8 @@
-# app/clients/claude_client.py
-import httpx
-from typing import Dict, Any, Optional
 import logging
-from app.config import settings
+import os
+from typing import Dict, Any
+
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ class ClaudeClient:
     """
 
     def __init__(self):
-        self.api_key = settings.ANTHROPIC_API_KEY
+        self.api_key = os.environ.get("ANTHROPIC_API_KEY")
         self.base_url = "https://api.anthropic.com/v1/messages"
         self.headers = {
             "x-api-key": self.api_key,

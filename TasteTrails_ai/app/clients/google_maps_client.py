@@ -1,17 +1,14 @@
 import logging
-from datetime import datetime
+import os
 from typing import Dict, Any, Optional, List
 
 import httpx
-
-from app.config import settings
 
 logger = logging.getLogger(__name__)
 
 class GoogleMapsClient:
     def __init__(self):
-        self.base_url = settings.GOOGLE_MAPS_BASE_URL
-        self.api_key = settings.GOOGLE_MAPS_API_KEY
+        self.api_key = os.environ.get("GOOGLE_MAPS_API_KEY")
         self.timeout = 30.0
 
         self.places_headers = {

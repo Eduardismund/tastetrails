@@ -11,6 +11,10 @@ import {
 import type { ApiResponse, User } from "../types/interfaces.ts";
 import './DashboardPage.css';
 
+
+const BACKEND_URL = import.meta.env.VITE_TASTETRAILS_BACKEND_URL;
+
+
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const { userId } = useParams<{ userId: string }>();
@@ -29,7 +33,7 @@ const DashboardPage: React.FC = () => {
 
     const fetchUserData = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/api/users/${userId}`);
+            const response = await fetch(`${BACKEND_URL}/api/users/${userId}`);
             const data: ApiResponse<User> = await response.json();
 
             if (response.ok && data.success) {

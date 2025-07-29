@@ -6,6 +6,10 @@ import GenericForm from "../components/GenericForm";
 import type { RegisterFormData, FormField } from "../types/interfaces";
 import './AuthenticatePage.css';
 
+
+const BACKEND_URL = import.meta.env.VITE_TASTETRAILS_BACKEND_URL;
+
+
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
 
@@ -34,7 +38,7 @@ const RegisterPage: React.FC = () => {
     ];
 
     const handleSubmit = async (formData: RegisterFormData) => {
-        const response = await fetch('http://localhost:8080/api/users', {
+        const response = await fetch(`${BACKEND_URL}/api/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
