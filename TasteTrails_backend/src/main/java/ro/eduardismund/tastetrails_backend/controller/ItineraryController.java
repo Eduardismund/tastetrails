@@ -16,7 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/itineraries")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173"})
+@CrossOrigin(origins = "http://localhost:3000")
 public class ItineraryController {
     private final ItineraryService itineraryService;
 

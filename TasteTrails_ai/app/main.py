@@ -14,7 +14,7 @@ app.include_router(qloo_routes.router, prefix="/api", tags=["qloo"])
 app.include_router(claude_routes.router, prefix="/api", tags=["claude"])
 app.include_router(google_maps_routes.router,prefix="/api", tags=["google maps"])
 
-@app.get("/")
+@app.get("/health")
 def health_check():
     return {"service": "TasteTrails AI", "status": "running"}
 

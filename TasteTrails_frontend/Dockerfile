@@ -1,0 +1,27 @@
+# Build stage
+FROM node:18-alpine AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+COPY . .
+
+ARG VITE_TASTETRAILS_AI_URL
+ARG VITE_TASTETRAILS_BACKEND_URL
+ARG VITE_GOOGLE_MAPS_API_KEY
+
+
+ENV VITE_TASTETRAILS_AI_URL=$VITE_TASTETRAILS_AI_URL
+ENV VITE_TASTETRAILS_BACKEND_URL=$VITE_TASTETRAILS_BACKEND_URL
+ENV VITE_GOOGLE_MAPS_API_KEY=$VITE_GOOGLE_MAPS_API_KEY
+
+RUN npm run build
+
+
+FROM nginx:alpine
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

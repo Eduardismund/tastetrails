@@ -11,6 +11,9 @@ import type {ActivityOption, CreateItineraryFormData, FormField} from "../types/
 import type {ApiResponse, Itinerary} from "../types/interfaces.ts";
 import './ItineraryPage.css';
 
+const BACKEND_URL = import.meta.env.VITE_TASTETRAILS_BACKEND_URL;
+const AI_URL = import.meta.env.VITE_TASTETRAILS_AI_URL;
+
 const ItineraryPage: React.FC = () => {
     const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     const navigate = useNavigate();
@@ -38,7 +41,7 @@ const ItineraryPage: React.FC = () => {
     const loadItineraries = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/itineraries/users/${userId}`);
+            const response = await fetch(`${BACKEND_URL}/api/itineraries/users/${userId}`);
 
             if (response.ok) {
                 const data: ApiResponse<Itinerary[]> = await response.json();
@@ -78,7 +81,7 @@ const ItineraryPage: React.FC = () => {
 
         if (selectedItinerary) {
             try {
-                const response = await fetch(`http://localhost:8080/api/itineraries/${selectedItinerary.id}`);
+                const response = await fetch(`${BACKEND_URL}/api/itineraries/${selectedItinerary.id}`);
                 if (response.ok) {
                     const data = await response.json();
                     setSelectedItinerary(data.data);
@@ -138,7 +141,7 @@ const ItineraryPage: React.FC = () => {
 
         try{
 
-            const isCityResponse = await fetch(`http://localhost:8001/api/is-city`, {
+            const isCityResponse = await fetch(`${AI_URL}/api/is-city`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -199,7 +202,7 @@ const ItineraryPage: React.FC = () => {
             throw new Error('End date must be after start date');
         }
 
-        const response = await fetch(`http://localhost:8080/api/itineraries/users/${userId}`, {
+        const response = await fetch(`${BACKEND_URL}/api/itineraries/users/${userId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

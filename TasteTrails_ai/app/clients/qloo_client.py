@@ -1,10 +1,10 @@
 import logging
+import os
 from typing import Dict, Any, List
 from urllib.parse import urlencode
 
 import httpx
 
-from app.config import settings
 from app.models.search_results import SearchResult
 
 logger = logging.getLogger(__name__)
@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 class QlooClient:
     def __init__(self):
-        self.base_url = settings.QLOO_BASE_URL
-        self.api_key = settings.QLOO_API_KEY
+        self.base_url = os.environ.get("QLOO_BASE_URL")
+        self.api_key = os.environ.get("QLOO_API_KEY")
         self.headers = {
             "Accept": "application/json",
             "X-API-Key": self.api_key,
