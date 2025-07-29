@@ -17,8 +17,6 @@ import {
 import './ProfilePage.css';
 import ItemListManager from "../components/ItemListManager.tsx";
 
-const BACKEND_URL = import.meta.env.VITE_TASTETRAILS_BACKEND_URL;
-const AI_URL = import.meta.env.VITE_TASTETRAILS_AI_URL;
 
 const ProfilePage: React.FC = () => {
     const navigate = useNavigate();
@@ -48,7 +46,7 @@ const ProfilePage: React.FC = () => {
     const loadExistingProfile = async () => {
         setIsLoadingProfile(true);
         try{
-            const response = await fetch(`${BACKEND_URL}/api/taste-profiles/users/${userId}`);
+            const response = await fetch(`/api/backend/taste-profiles/users/${userId}`);
 
             if(response.ok){
                 const data = await response.json();
@@ -126,7 +124,7 @@ const ProfilePage: React.FC = () => {
         setError(null);
 
         try{
-            const response = await fetch(`${BACKEND_URL}/api/taste-profiles/users/${userId}`, {
+            const response = await fetch(`/api/backend/taste-profiles/users/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -151,7 +149,7 @@ const ProfilePage: React.FC = () => {
                 setError(data.message || 'Failed to save')
             }
 
-            await fetch(`${AI_URL}/api/qloo/recommendations`, {
+            await fetch(`/api/ai/qloo/recommendations`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

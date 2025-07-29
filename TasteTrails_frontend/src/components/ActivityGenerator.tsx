@@ -9,8 +9,6 @@ import type {
     UserPreferences
 } from "../types/interfaces.ts";
 
-const BACKEND_URL = import.meta.env.VITE_TASTETRAILS_BACKEND_URL;
-const AI_URL = import.meta.env.VITE_TASTETRAILS_AI_URL;
 
 const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
                                                                  itineraryStartDate,
@@ -72,7 +70,7 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
     };
 
     const getUserTasteProfile = async (userId: string): Promise<UserPreferences> => {
-        const tasteProfileResponse = await fetch(`${BACKEND_URL}/api/taste-profiles/users/${userId}`)
+        const tasteProfileResponse = await fetch(`/api/backend/taste-profiles/users/${userId}`)
 
         if (!tasteProfileResponse.ok) {
             throw new Error('Failed to fetch taste profile');
@@ -112,7 +110,7 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
     }
 
     const getExistingActivities = async (itineraryId: string): Promise<ActivityResponse[]> => {
-        const activitiesResponse = await fetch(`${BACKEND_URL}/api/itineraries/${itineraryId}/activities`)
+        const activitiesResponse = await fetch(`/api/backend/itineraries/${itineraryId}/activities`)
 
         if (!activitiesResponse.ok) {
             throw new Error('Failed to fetch existing activities')
@@ -179,7 +177,7 @@ const ActivityGenerator: React.FC<ActivityGeneratorProps> = ({
                 existing_activities: existingActivitiesForClaude
             };
 
-            const claudeResponse = await fetch(`${AI_URL}/api/claude/generate-options`, {
+            const claudeResponse = await fetch(`/api/ai/claude/generate-options`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

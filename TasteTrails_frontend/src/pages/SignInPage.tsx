@@ -9,8 +9,6 @@ import './AuthenticatePage.css';
 import {useScrollToTop} from "../hooks/useScrollToTop";
 
 
-const BACKEND_URL = import.meta.env.VITE_TASTETRAILS_BACKEND_URL;
-
 
 const SignInPage: React.FC = () => {
     useScrollToTop();
@@ -35,7 +33,7 @@ const SignInPage: React.FC = () => {
     ];
 
     const handleSubmit = async (formData: SignInFormData) => {
-        const response = await fetch(`${BACKEND_URL}/api/users/login`, {
+        const response = await fetch(`/api/backend/users/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
