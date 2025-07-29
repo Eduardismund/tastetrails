@@ -1,13 +1,11 @@
 import json
 import logging
 from datetime import datetime, date
-from typing import Dict, List, Any
 
+import httpx
 from fastapi import HTTPException
 
 from app.clients.claude_client import claude_client
-from app.services.google_maps_service import google_maps_service
-from app.services.qloo_service import qloo_service
 
 logger = logging.getLogger(__name__)
 
@@ -23,42 +21,59 @@ class ClaudeService:
     async def generate_activity(self, user_preferences, city, coordinates,start_time, end_time, activity_date, theme,
                                 existing_activities):
         try:
-            cultural_profile = await qloo_service.get_recommendations(user_preferences, 5)
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "http://localhost:8001/api/qloo/recommendations",
+                    json={"user_preferences": user_preferences, "limit": 5},
+                    timeout=10.0
+                )
+                if response.status_code != 200:
+                    raise HTTPException(status_code=500, detail="Qloo failed")
+                cultural_profile = response.json()
 
-            if not cultural_profile.get("success"):
-                raise HTTPException(status_code=500, detail="Qloo failed")
+                response = await client.post(
+                    "http://localhost:8001/api/venues",
+                    json={"coordinates": coordinates},
+                    timeout=10.0
+                )
+                if response.status_code != 200:
+                    raise HTTPException(status_code=500, detail="Google Maps failed")
 
-            nearby_venues = await google_maps_service.find_venues_near_location(coordinates)
-
-            if not nearby_venues.get("success"):
-                logger.error(f"Google Maps venues failed: {nearby_venues.get('error')}")
-                raise HTTPException(status_code=500, detail="Google Maps failed")
-
-            target_date = datetime.strptime(activity_date, "%Y-%m-%d").date()
-            today = date.today()
-            days_diff = (target_date - today).days
-
-            weather_info = await google_maps_service.get_weather_forecast_for_location(coordinates, days_diff)
-
-            if not weather_info.get("success"):
-                logger.warning(f"Weather API failed: {weather_info.get('error')}")
+                nearby_venues = response.json()
 
 
-            air_quality_info = await google_maps_service.get_hourly_air_quality_range_for_location(coordinates, start_time,
-                                                                                                   end_time,
-                                                                                                   str(target_date))
+                target_date = datetime.strptime(activity_date, "%Y-%m-%d").date()
+                today = date.today()
+                days_diff = (target_date - today).days
 
-            if not air_quality_info.get("success"):
-                logger.warning(f"Air quality failed: {air_quality_info.get('error')}")
-            else:
-                logger.info("Air quality information retrieved successfully")
+                response = await client.post(
+                    "http://localhost:8001/api/weather-route",
+                    json={"coordinates": coordinates, "days_ahead": days_diff},
+                    timeout=10.0
+                )
+                if response.status_code != 200:
+                    raise HTTPException(status_code=500, detail="Google Maps failed")
 
-            pollen_info = await google_maps_service.get_pollen_forecast_for_location(coordinates, str(target_date))
+                weather_info = response.json()
 
-            if not pollen_info.get("success"):
-                logger.warning(f"Pollen forecast failed: {pollen_info.get('error')}")
-            else:
-                logger.info("Pollen information retrieved successfully")
+                response = await client.post(
+                    "http://localhost:8001/api/air-quality",
+                    json={"coordinates": coordinates,
+                          "start_hour": str(start_time),
+                          "end_hour": str(end_time),
+                          "target_date": str(activity_date)},
+                    timeout=10.0
+                )
+
+                air_quality_info = response.json()
+
+                response = await client.post(
+                    "http://localhost:8001/api/pollen-forecast",
+                    json={"coordinates": coordinates, "target_date": activity_date},
+                    timeout=10.0
+                )
+
+                pollen_info = response.json()
 
             prompt = f"""
                         Have the mindset of an expert trip advisor for {theme} that knows all the activities and periodic events in the city {city}, between the time period: {start_time} to {end_time} on date {activity_date}.
@@ -80,6 +95,10 @@ class ClaudeService:
                         }}
 
                         RULES:
+                        - Do not repeat the user preference more than once, instead give base your answers on the recommendations
+                        - The Qloo recommendations genres are as relevant to ensure that ativities are appropriate
+                        - All the Google Maps API's are relvant and mention when they are a favourable thing or not
+                        - The activity description should be around 5 sentence long and be as creative as possible, combining as many preferences and recommendations as possible, ex: mention the main activity and specify mini tasks to do in that time like listen to a song, drink something, etc... what is relevant to the user
                         - The coordinates, heading and pitch must be the best in order to fully put in advantage that place, prioritize the view from the street directly to the place
                         - The options must be relevant to the user personality reflected through Qloo recommendations
                         - The Qloo recommendations are just as valuable in selecting the most appropriate option
@@ -115,20 +134,29 @@ class ClaudeService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def generate_options_today(self, user_preferences, itinerary_cities):
+    async def generate_options_today(self, user_preferences, itinerary_cities, today_date):
         try:
-            cultural_profile = await qloo_service.get_recommendations(user_preferences, 5)
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "http://localhost:8001/api/qloo/recommendations",
+                    json={"user_preferences": user_preferences, "limit": 5},
+                    timeout=10.0
+                )
+                if response.status_code != 200:
+                    raise HTTPException(status_code=500, detail="Qloo failed")
+                cultural_profile = response.json()
 
-            if not cultural_profile.get("success"):
-                raise HTTPException(status_code=500, detail="Qloo failed")
-
-            recommended_cities = await qloo_service.get_city_recommendations(itinerary_cities, 3)
-
-            if not recommended_cities.get("success"):
-                raise HTTPException(status_code=500, detail="Qloo failed")
+                response = await client.post(
+                    "http://localhost:8001/api/qloo/recommendation-cities",
+                    json={"itinerary_cities": itinerary_cities, "limit": 5},
+                    timeout=10.0
+                )
+                if response.status_code != 200:
+                    raise HTTPException(status_code=500, detail="Qloo failed")
+                recommended_cities = response.json()
 
             prompt = f"""
-                        Have the mindset of an expert trip advisor that knows all the activities and periodic events today, {date.today()}.
+                        Have the mindset of an expert trip advisor that knows all the activities and periodic events today, {today_date}.
                         The cities Qloo recommends {recommended_cities.get("recommended_cities")}, but choose any other city in the world if there is a better fit
                         User's preferences are: {user_preferences}
                         Qloo's recommendations are: {cultural_profile}

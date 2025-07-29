@@ -1,11 +1,8 @@
-import asyncio
-from datetime import datetime, timezone, timedelta, date
-from typing import List, Dict, Any
+import logging
+from typing import Dict, Any
+from datetime import timezone, timedelta, date, datetime
 
 from app.clients.google_maps_client import GoogleMapsClient
-from app.clients.qloo_client import QlooClient
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +164,9 @@ class GoogleMapsService:
                 "success": False,
                 "error": "Internal service error while getting weather forecast"
             }
-    async def get_hourly_air_quality_range_for_location(self, coordinates: str, start_hour: str, end_hour: str, target_date: str) -> Dict[str, Any]:
+
+    async def get_hourly_air_quality_range_for_location(self, coordinates: str, start_hour: str, end_hour: str,
+                                                        target_date: str) -> Dict[str, Any]:
 
         try:
             start_datetime = datetime.strptime(f"{target_date} {start_hour}", "%Y-%m-%d %H:%M")
@@ -213,6 +212,7 @@ class GoogleMapsService:
                 "success": False,
                 "error": "Internal service error while getting weather forecast"
             }
+
     async def get_pollen_forecast_for_location(self, coordinates: str, target_date: str) -> Dict[str, Any]:
 
         try:
