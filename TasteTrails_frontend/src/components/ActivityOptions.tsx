@@ -4,6 +4,7 @@ import {faStar, faLocationDot} from "@fortawesome/free-solid-svg-icons";
 import type {ActivityOption, ActivityOptionsProps} from "../types/interfaces.ts";
 import StreetView from "./StreetView.tsx";
 
+
 const ActivityOptions: React.FC<ActivityOptionsProps> = ({
                                                              options,
                                                              itineraryId,
@@ -49,7 +50,7 @@ const ActivityOptions: React.FC<ActivityOptionsProps> = ({
             };
 
 
-            const response = await fetch(`http://localhost:8080/api/itineraries/${itineraryId}/activities`, {
+            const response = await fetch(`/api/backend/itineraries/${itineraryId}/activities`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

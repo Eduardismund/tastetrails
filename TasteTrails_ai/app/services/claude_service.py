@@ -18,7 +18,7 @@ class ClaudeService:
 
     def __init__(self):
         self.client = claude_client
-        self.fastapi_base_url = "http://fastapi:8001"
+        self.fastapi_base_url = "http://localhost:8001"
 
 
     async def generate_activity(self, user_preferences, city, coordinates,start_time, end_time, activity_date, theme,
@@ -26,7 +26,7 @@ class ClaudeService:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{self.fastapi_base_url}/api/qloo/recommendations",
+                    f"{self.fastapi_base_url}/qloo/recommendations",
                     json={"user_preferences": user_preferences, "limit": 5},
                     timeout=10.0
                 )
@@ -35,7 +35,7 @@ class ClaudeService:
                 cultural_profile = response.json()
 
                 response = await client.post(
-                    f"{self.fastapi_base_url}/api/venues",
+                    f"{self.fastapi_base_url}/google-maps/venues",
                     json={"coordinates": coordinates},
                     timeout=10.0
                 )
@@ -50,7 +50,7 @@ class ClaudeService:
                 days_diff = (target_date - today).days
 
                 response = await client.post(
-                    f"{self.fastapi_base_url}/api/weather-route",
+                    f"{self.fastapi_base_url}/google-maps/weather-route",
                     json={"coordinates": coordinates, "days_ahead": days_diff},
                     timeout=10.0
                 )
@@ -60,7 +60,7 @@ class ClaudeService:
                 weather_info = response.json()
 
                 response = await client.post(
-                    f"{self.fastapi_base_url}/api/air-quality",
+                    f"{self.fastapi_base_url}/google-maps/air-quality",
                     json={"coordinates": coordinates,
                           "start_hour": str(start_time),
                           "end_hour": str(end_time),
@@ -71,7 +71,7 @@ class ClaudeService:
                 air_quality_info = response.json()
 
                 response = await client.post(
-                    f"{self.fastapi_base_url}/api/pollen-forecast",
+                    f"{self.fastapi_base_url}/google-maps/pollen-forecast",
                     json={"coordinates": coordinates, "target_date": activity_date},
                     timeout=10.0
                 )
@@ -141,7 +141,7 @@ class ClaudeService:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{self.fastapi_base_url}/api/qloo/recommendations",
+                    f"{self.fastapi_base_url}/qloo/recommendations",
                     json={"user_preferences": user_preferences, "limit": 5},
                     timeout=10.0
                 )
@@ -150,7 +150,7 @@ class ClaudeService:
                 cultural_profile = response.json()
 
                 response = await client.post(
-                    f"{self.fastapi_base_url}/api/qloo/recommendation-cities",
+                    f"{self.fastapi_base_url}/qloo/recommendation-cities",
                     json={"itinerary_cities": itinerary_cities, "limit": 5},
                     timeout=10.0
                 )
