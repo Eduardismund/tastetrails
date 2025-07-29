@@ -4,6 +4,7 @@
 
 # Build directories
 /TasteTrails_backend/.gradle
+/TasteTrails_ai/.venv
 build/
 target/
 out/
@@ -24,3 +25,5 @@ secrets/
 # Testing
 coverage/
 test-results/
+
+**/.env
