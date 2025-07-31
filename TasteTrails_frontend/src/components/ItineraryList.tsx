@@ -13,7 +13,6 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ itineraries, selectedId, 
     const listClasses = `itinerary-list ${itineraries.length > 2 ? 'scrollable' : ''}`;
 
 
-
     return (
         <div className="itinerary-list-container">
             <div className="itinerary-list-header">

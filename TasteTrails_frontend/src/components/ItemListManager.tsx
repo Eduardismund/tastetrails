@@ -3,8 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import type {AutocompleteItem, ItemListManagerProps} from "../types/interfaces.ts";
 
-const AI_URL = import.meta.env.VITE_TASTETRAILS_AI_URL;
-
 
 const ItemListManager: React.FC<ItemListManagerProps> = ({
                                                              title,
@@ -51,7 +49,7 @@ const ItemListManager: React.FC<ItemListManagerProps> = ({
         try {
             const entityType = getEntityType(category);
             const response = await fetch(
-                `${AI_URL}/qloo/search?query=${encodeURIComponent(query)}&limit=3&entity_type=${entityType}`
+                `/api/ai/qloo/search?query=${encodeURIComponent(query)}&limit=3&entity_type=${entityType}`
             );
 
             if(response.ok) {

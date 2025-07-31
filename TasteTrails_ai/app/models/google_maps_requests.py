@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 
 # noinspection PyArgumentList
 class AddressRequest(BaseModel):
-    """Request model for address-related operations."""
     address: str = Field(
         ...,
         min_length=1,
@@ -14,7 +13,6 @@ class AddressRequest(BaseModel):
 
 # noinspection PyArgumentList
 class RoutesRequest(BaseModel):
-    """Request model for route calculation between two addresses."""
     start_address: str = Field(
         ...,
         min_length=1,
@@ -35,7 +33,6 @@ class RoutesRequest(BaseModel):
 
 # noinspection PyArgumentList
 class VenueRequest(BaseModel):
-    """Request model for venue search near a location."""
     coordinates: str = Field(
         ...,
         min_length=1,
@@ -58,7 +55,6 @@ class VenueRequest(BaseModel):
 
 # noinspection PyArgumentList
 class WeatherRequest(BaseModel):
-    """Request model for weather forecast."""
     coordinates: str = Field(
         ...,
         min_length=1,
@@ -74,7 +70,6 @@ class WeatherRequest(BaseModel):
 
 # noinspection PyArgumentList
 class AirQualityRequest(BaseModel):
-    """Request model for weather forecast."""
     coordinates: str = Field(
         ...,
         min_length=1,

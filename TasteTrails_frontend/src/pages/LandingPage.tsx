@@ -49,7 +49,7 @@ const LandingPage: React.FC = () => {
             <main className="simple-main common">
                 <div className="landing-content">
                     <div className="hero-section">
-                        <h2 className="hero-title">Plan Your Food Adventures</h2>
+                        <h2 className="hero-title">Plan Your Next Adventures</h2>
                         <p className="hero-description">
                             Create personalized itineraries based on your taste preferences.
                             Discover amazing, unique and unforgettable experiences around the world that perfectly match your taste.

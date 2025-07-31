@@ -24,7 +24,6 @@ const DashboardPage: React.FC = () => {
             navigate('/register');
             return;
         }
-
         fetchUserData();
         fetchDailySuggestions();
     }, [userId, navigate]);
@@ -217,14 +216,11 @@ const DashboardPage: React.FC = () => {
                     </section>
 
 
-                    {/* Daily Suggestions Section */}
-                    {/* Daily Suggestions Section */}
                     {dailySuggestions && dailySuggestions.options && dailySuggestions.options.length > 0 && (
                         <section className="daily-suggestions-section">
                             <h3>Today's Cultural Suggestions</h3>
                             <div className="suggestions-scroll-container">
                                 <div className="suggestions-carousel">
-                                    {/* Render suggestions multiple times for seamless infinite loop */}
                                     {[
                                         ...dailySuggestions.options,
                                         ...dailySuggestions.options,
