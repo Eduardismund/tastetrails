@@ -2,7 +2,6 @@
 
 # TasteTrails
 
-
 AI-Powered Cultural Intelligence Meets Smart Travel Planning.
 Turn your favorite movies, actors, books, and brands into personalized travel experiences using Claude AI, Qloo's cultural intelligence, and real-time environmental data provided by Google Maps.
 
