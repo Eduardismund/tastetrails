@@ -49,15 +49,18 @@ class ClaudeService:
                 today = date.today()
                 days_diff = (target_date - today).days
 
-                response = await client.post(
-                    f"{self.fastapi_base_url}/google-maps/weather-route",
-                    json={"coordinates": coordinates, "days_ahead": days_diff},
-                    timeout=10.0
-                )
-                if response.status_code != 200:
-                    raise HTTPException(status_code=500, detail="Google Maps failed")
+                if days_diff < 4:
+                    response = await client.post(
+                        f"{self.fastapi_base_url}/google-maps/weather-route",
+                        json={"coordinates": coordinates, "days_ahead": days_diff},
+                        timeout=10.0
+                    )
+                    if response.status_code != 200:
+                        raise HTTPException(status_code=500, detail="Google Maps failed")
 
-                weather_info = response.json()
+                    weather_info = response.json()
+                else:
+                    weather_info = ""
 
                 response = await client.post(
                     f"{self.fastapi_base_url}/google-maps/air-quality",
@@ -178,12 +181,13 @@ class ClaudeService:
                         RULES:
                         - The options must be relevant to the user personality reflected through Qloo recommendations
                         - The Qloo recommendations are just as valuable in selecting the most appropriate option
-                        - The today date must be important for an activity in that city that the user would enjoy based on their taste
+                        - The today date must be important for an activity in that city that the user would enjoy based on their taste, and mention the fact that today is happening
                         - Do not mention the Qloo recommendations as explicit from Qloo, instead treat them as if the user was the one who input them and maybe value them more, 
                         - Based on the User preferences make the option of activity as unique as possible. e.g. 'Because the user likes an X artist, he should listen to their music while visiting a location'
                         - Make the activity more descriptive and include elements and aspects from the whole 'user_preferences' categories to truly make it unique
                         - The activity description should be detailed and specific, including many elements of what the user actually likes or that are recommended by Qloo to them
                         - When reasoning, use second person addressing, as talking directly with the user
+                        - The description should not be more than one sentence long
                         - The reasoning should be short and clear, not more than a sentence
                         - There must be 5 options, each following the same structure but different activities
                         - Prioritize options that meet multiple preferences criteria

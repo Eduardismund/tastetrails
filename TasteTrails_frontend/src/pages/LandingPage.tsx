@@ -43,7 +43,7 @@ const LandingPage: React.FC = () => {
                         className="ml-3"
                     />
                 </h1>
-                <p className="landing-subtitle">Discover Your Perfect Culinary Journey</p>
+                <p className="landing-subtitle">Discover Your Next Journey Influenced By your Own Taste Profile</p>
             </header>
 
             <main className="simple-main common">
@@ -52,7 +52,7 @@ const LandingPage: React.FC = () => {
                         <h2 className="hero-title">Plan Your Food Adventures</h2>
                         <p className="hero-description">
                             Create personalized itineraries based on your taste preferences.
-                            Discover amazing restaurants, local cuisine, and unforgettable dining experiences around the world.
+                            Discover amazing, unique and unforgettable experiences around the world that perfectly match your taste.
                         </p>
                     </div>
 
@@ -79,7 +79,8 @@ const LandingPage: React.FC = () => {
                                 className="feature-icon"
                             />
                             <h3>Taste Profiles</h3>
-                            <p>Create your unique taste profile to get personalized recommendations</p>
+                            <p>Create your unique cultural fingerprint across 8 domains to unlock personalized
+                                recommendations powered by Qloo's intelligence</p>
                         </div>
                         <div className="simple-feature-card main-page">
                             <FontAwesomeIcon
@@ -87,15 +88,16 @@ const LandingPage: React.FC = () => {
                                 className="feature-icon"
                             />
                             <h3>Smart Itineraries</h3>
-                            <p>Plan your trips with AI-powered restaurant and activity suggestions</p>
-                        </div>
+                            <p>Plan your trips with AI-powered activity suggestions that help you discover experiences
+                                you never knew you'd love</p></div>
                         <div className="simple-feature-card main-page">
                             <FontAwesomeIcon
                                 icon={faStar}
                                 className="feature-icon"
                             />
-                            <h3>Local Experiences</h3>
-                            <p>Discover hidden gems and authentic local dining experiences</p>
+                            <h3>Safe & Comfortable Exploration</h3>
+                            <p>Discover hidden gems with confidence using real-time weather, air quality, and pollen
+                                data from Google Maps</p>
                         </div>
                     </div>
                 </div>

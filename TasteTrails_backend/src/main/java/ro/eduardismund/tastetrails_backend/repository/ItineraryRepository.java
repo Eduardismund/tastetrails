@@ -16,6 +16,10 @@ import java.util.UUID;
 @Repository
 public interface ItineraryRepository extends JpaRepository<Itinerary, UUID> {
     List<Itinerary> findByUserIdOrderByCreatedAtDesc(UUID userId);
+
+    @Query("SELECT DISTINCT i.destination FROM Itinerary i WHERE i.user.id = :userId ORDER BY i.destination")
+    List<String> findAllDestinationsByUserId(@Param("userId") UUID userId);
+
     List<Itinerary> findByDestinationContainingIgnoreCase(String destination);
     @Query("SELECT i FROM Itinerary i WHERE i.user.id = :userId AND i.startDate >= :currentDate ORDER BY i.startDate ASC")
     List<Itinerary> findUpcomingItinerariesByUserId(@Param("userId") UUID userId, @Param("currentDate") LocalDate currentDate);

@@ -218,6 +218,19 @@ export interface ActivityOptionsProps {
 
 // === PROFILE INTERFACES === //
 
+export interface DailySuggestion {
+    id: string;
+    name: string;
+    activity: string;
+    location: string;
+    cultural_score: number;
+    reasoning: string;
+}
+
+export interface DailySuggestionsResponse {
+    options: DailySuggestion[];
+}
+
 export interface UserPreferences {
     artists?: string[];
     movies?: string[];

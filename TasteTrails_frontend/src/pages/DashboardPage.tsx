@@ -8,17 +8,15 @@ import {
     faSignOutAlt,
     faSpinner
 } from "@fortawesome/free-solid-svg-icons";
-import type { ApiResponse, User } from "../types/interfaces.ts";
+import type {ApiResponse, TasteProfile, User, UserPreferences, DailySuggestionsResponse} from "../types/interfaces.ts";
 import './DashboardPage.css';
-
-
-
 
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const { userId } = useParams<{ userId: string }>();
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [dailySuggestions, setDailySuggestions] = useState<DailySuggestionsResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -28,6 +26,7 @@ const DashboardPage: React.FC = () => {
         }
 
         fetchUserData();
+        fetchDailySuggestions();
     }, [userId, navigate]);
 
     const fetchUserData = async () => {
@@ -58,6 +57,75 @@ const DashboardPage: React.FC = () => {
 
     const handleLogout = () => {
         navigate('/');
+    };
+
+    const fetchDailySuggestions = async () => {
+        try {
+            const userPreferences = await getUserTasteProfile(userId!);
+
+            const destinationsResponse = await fetch(`/api/backend/itineraries/users/${userId}/destinations`);
+            const destinationsData = await destinationsResponse.json();
+
+            const dailySuggestionsResponse = await fetch(`/api/ai/claude/generate_options_today`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_preferences: userPreferences,
+                    itinerary_cities: destinationsData.data || [],
+                    today_date: new Date().toISOString().split('T')[0]
+                })
+            });
+
+            if (dailySuggestionsResponse.ok) {
+                const suggestionsData = await dailySuggestionsResponse.json();
+                setDailySuggestions(suggestionsData);
+            }
+
+        } catch (err) {
+            console.error('Error fetching daily suggestions:', err);
+        }
+    };
+
+    const getUserTasteProfile = async (userId: string): Promise<UserPreferences> => {
+        const tasteProfileResponse = await fetch(`/api/backend/taste-profiles/users/${userId}`);
+
+        if (!tasteProfileResponse.ok) {
+            throw new Error('Failed to fetch taste profile');
+        }
+
+        const tasteProfileData = await tasteProfileResponse.json();
+        const tasteProfile: TasteProfile = tasteProfileData.data;
+
+        const userPreferences: UserPreferences = {};
+
+        if (tasteProfile.artistPreferences?.artists) {
+            userPreferences.artists = tasteProfile.artistPreferences.artists;
+        }
+        if (tasteProfile.moviePreferences?.movies) {
+            userPreferences.movies = tasteProfile.moviePreferences.movies;
+        }
+        if (tasteProfile.bookPreferences?.books) {
+            userPreferences.books = tasteProfile.bookPreferences.books;
+        }
+        if (tasteProfile.brandPreferences?.brands) {
+            userPreferences.brands = tasteProfile.brandPreferences.brands;
+        }
+        if (tasteProfile.videoGamePreferences?.videoGames) {
+            userPreferences.videoGames = tasteProfile.videoGamePreferences.videoGames;
+        }
+        if (tasteProfile.tvShowPreferences?.tvShows) {
+            userPreferences.tvShows = tasteProfile.tvShowPreferences.tvShows;
+        }
+        if (tasteProfile.podcastPreferences?.podcasts) {
+            userPreferences.podcasts = tasteProfile.podcastPreferences.podcasts;
+        }
+        if (tasteProfile.personPreferences?.persons) {
+            userPreferences.persons = tasteProfile.personPreferences.persons;
+        }
+
+        return userPreferences;
     };
 
     if (isLoading) {
@@ -126,6 +194,7 @@ const DashboardPage: React.FC = () => {
             <main className="simple-main">
                 <div className="dashboard-container">
 
+
                     {/* Actions Section */}
                     <section className="actions-section">
                         <h3>What would you like to do today?</h3>
@@ -134,7 +203,7 @@ const DashboardPage: React.FC = () => {
                             <div className="simple-feature-card dash-page" onClick={handleModifyProfile}>
                                 <FontAwesomeIcon icon={faUser} className="feature-icon" />
                                 <h4>Modify Profile</h4>
-                                <p>Update your cultural taste preferences, add new artists, and refine your profile</p>
+                                <p>Update your cultural taste preferences and refine your profile</p>
                                 <button className="action-btn btn-primary">Edit Profile</button>
                             </div>
 
@@ -146,6 +215,40 @@ const DashboardPage: React.FC = () => {
                             </div>
                         </div>
                     </section>
+
+
+                    {/* Daily Suggestions Section */}
+                    {/* Daily Suggestions Section */}
+                    {dailySuggestions && dailySuggestions.options && dailySuggestions.options.length > 0 && (
+                        <section className="daily-suggestions-section">
+                            <h3>Today's Cultural Suggestions</h3>
+                            <div className="suggestions-scroll-container">
+                                <div className="suggestions-carousel">
+                                    {/* Render suggestions multiple times for seamless infinite loop */}
+                                    {[
+                                        ...dailySuggestions.options,
+                                        ...dailySuggestions.options,
+                                        ...dailySuggestions.options,
+                                        ...dailySuggestions.options
+                                    ].map((suggestion, index) => (
+                                        <div key={`${suggestion.id}-${index}`} className="suggestion-card">
+                                            <div className="suggestion-header">
+                                                <h4>{suggestion.name}</h4>
+                                            </div>
+                                            <div className="suggestion-content">
+                                                <p className="activity">{suggestion.activity}</p>
+                                                <p className="location">
+                                                    <FontAwesomeIcon icon={faMapLocationDot} />
+                                                    {suggestion.location}
+                                                </p>
+                                                <p className="reasoning">{suggestion.reasoning}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )}
 
                     <section className="account-section">
                         <h4>Account Information</h4>

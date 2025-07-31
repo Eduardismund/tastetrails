@@ -58,6 +58,11 @@ public class ItineraryController {
         return ResponseEntity.ok(ApiResponse.success("Itineraries fetched successfully", responses));
     }
 
+    @GetMapping("/users/{userId}/destinations")
+    public ResponseEntity<ApiResponse<List<String>>> getAllDestinations(@PathVariable UUID userId) {
+        return ResponseEntity.ok(ApiResponse.success("Itineraries fetched successfully", itineraryService.getAllDestinationsByUserId(userId)));
+    }
+
     @GetMapping("/users/{userId}/upcoming")
     public ResponseEntity<ApiResponse<List<ItineraryResponse>>> getUpcomingItineraries(@PathVariable UUID userId) {
         final var itineraries = itineraryService.findUpcomingItineraries(userId);
