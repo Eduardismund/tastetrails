@@ -253,8 +253,9 @@ open http://localhost
 
 ```
 --- 
-##  Demo Video
 
-![TasteTrails Demo]
+## Demo Video
 
-**Watch the demo video**: [YouTube Link](https://youtube.com/watch?v=YOUR_VIDEO_ID)
+
+[![TasteTrails Demo](https://img.youtube.com/vi/1XcniJb_l2A/0.jpg)](https://youtu.be/1XcniJb_l2A?si=qQk4rjMn0GqrcJSt)
+
