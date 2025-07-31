@@ -33,27 +33,22 @@ const StreetView: React.FC<StreetViewProps> = ({
 
     useEffect(() => {
         const loadGoogleMapsScript = () => {
-            // Check if already loaded
             if (window.google?.maps?.Map) {
                 initializeMap();
                 return;
             }
 
-            // Check if script is already in DOM
             const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
             if (existingScript) {
                 existingScript.addEventListener('load', () => {
-                    // Add delay to ensure API is ready
                     setTimeout(initializeMap, 500);
                 });
                 return;
             }
 
-            // Create new script
             const script = document.createElement('script');
             script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
             script.onload = () => {
-                // Add delay to ensure API is ready
                 setTimeout(initializeMap, 500);
             };
             script.onerror = () => {
@@ -141,12 +136,12 @@ const StreetView: React.FC<StreetViewProps> = ({
                         visible: true,
                         addressControl: false,
                         linksControl: false,
-                        panControl: false,           // Remove pan control
+                        panControl: false,
                         zoomControl: false,
                         fullscreenControl: false,
                         motionTracking: false,
                         motionTrackingControl: false,
-                        disableDefaultUI: true,      // Disable all default UI
+                        disableDefaultUI: true,
 
                     }
                 );

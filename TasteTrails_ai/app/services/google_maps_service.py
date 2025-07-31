@@ -256,69 +256,6 @@ class GoogleMapsService:
                 "success": False,
                 "error": "Internal service error while getting weather forecast"
             }
-    async def get_street_view_image_for_location(self, location: str, size: str = "400x400", fov: int = 90, heading: int = 0, pitch: int = 0) -> Dict[str, Any]:
-
-        try:
-            if not location or not location.strip():
-                return {
-                    "success": False,
-                    "error": "Location cannot be empty"
-                }
-
-            if "x" not in size:
-                return {
-                    "success": False,
-                    "error": "Size must be in format 'widthxheight' (e.g., '400x400')"
-                }
-
-            try:
-                width, height = map(int, size.split("x"))
-                if width > 640 or height > 640 or width < 1 or height < 1:
-                    return {
-                        "success": False,
-                        "error": "Image dimensions must be between 1x1 and 640x640 pixels"
-                    }
-            except ValueError:
-                return {
-                    "success": False,
-                    "error": "Invalid size format. Use 'widthxheight' (e.g., '400x400')"
-                }
-
-            if fov < 10 or fov > 120:
-                return {
-                    "success": False,
-                    "error": "Field of view must be between 10 and 120 degrees"
-                }
-
-            if heading < 0 or heading > 360:
-                return {
-                    "success": False,
-                    "error": "Heading must be between 0 and 360 degrees"
-                }
-
-            if pitch < -90 or pitch > 90:
-                return {
-                    "success": False,
-                    "error": "Pitch must be between -90 and 90 degrees"
-                }
-
-            google_street_view = await self.client.get_street_view_image(
-                size=size,
-                location=location.strip(),
-                fov=fov,
-                heading=heading,
-                pitch=pitch,
-            )
-
-            return google_street_view
-
-        except Exception as e:
-            logger.error(f"Service error getting weather for {location}: {str(e)}")
-            return {
-                "success": False,
-                "error": "Internal service error while getting weather forecast"
-            }
-
 
 
 google_maps_service = GoogleMapsService()

@@ -12,10 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class ClaudeService:
-    """
-    Claude service - handles business logic for itinerary generation
-    """
-
     def __init__(self):
         self.client = claude_client
         self.fastapi_base_url = "http://localhost:8001"
@@ -101,31 +97,43 @@ class ClaudeService:
                         }}
 
                         RULES:
+
+                        ## User Preferences & Cultural Intelligence
                         - Do not repeat the user preference more than once, instead give base your answers on the recommendations
-                        - The Qloo recommendations genres are as relevant to ensure that ativities are appropriate
-                        - All the Google Maps API's are relvant and mention when they are a favourable thing or not
-                        - The activity description should be around 5 sentence long and be as creative as possible, combining as many preferences and recommendations as possible, ex: mention the main activity and specify mini tasks to do in that time like listen to a song, drink something, etc... what is relevant to the user
-                        - The coordinates, heading and pitch must be the best in order to fully put in advantage that place, prioritize the view from the street directly to the place
+                        - The Qloo recommendations genres are as relevant to ensure that activities are appropriate
                         - The options must be relevant to the user personality reflected through Qloo recommendations
                         - The Qloo recommendations are just as valuable in selecting the most appropriate option
-                        - Do not mention the Qloo recommendations as explicit from Qloo, instead treat them as if the user was the one who input them and maybe value them more, 
+                        - Do not mention the Qloo recommendations as explicit from Qloo, instead treat them as if the user was the one who input them and maybe value them more
                         - Based on the User preferences make the option of activity as unique as possible. e.g. 'Because the user likes an X artist, he should listen to their music while visiting a location'
+                        - Prioritize options that meet multiple preferences criteria
+                        - Choose the best activity options, based on the personality reflected through preferences from a specific entity or more
+                        
+                        ## Activity Description Requirements
+                        - The activity description should be around 5 sentence long and be as creative as possible, combining as many preferences and recommendations as possible, ex: mention the main activity and specify mini tasks to do in that time like listen to a song, drink something, etc... what is relevant to the user
                         - Make the activity more descriptive and include elements and aspects from the whole 'user_preferences' categories to truly make it unique
                         - The activity description should be detailed and specific, including many elements of what the user actually likes or that are recommended by Qloo to them
-                        - When reasoning, use second person addressing, as talking directly with the user
+                        
+                        ## Google Maps Integration
+                        - All the Google Maps API's are relevant and mention when they are a favorable thing or not
+                        - The coordinates, heading and pitch must be the best in order to fully put in advantage that place, prioritize the view from the street directly to the place
                         - The addresses should match the style of the ones received from Google Places API
-                        - Air quality should be a factor in choosing activities and mentioned when is affects
-                        - Pollen should be a factor in choosing activities and mentioned when is affects
-                        - Weather on that day factors in the activity choosing reasoning, if it exists and mention when weather affects activities
                         - The Google Places API recommendations are important, but if there is a better option that isn't linked to Google Places, consider it better
-                        - The reasoning should be short and clear, not more than a sentence
+                        
+                        ## Environmental Factors
+                        - Air quality should be a factor in choosing activities and mentioned when it affects
+                        - Pollen should be a factor in choosing activities and mentioned when it affects
+                        - Weather on that day factors in the activity choosing reasoning, if it exists and mention when weather affects activities
+                        
+                        ## Activity Generation Logic
                         - Already existing activities should not be considered again
                         - There must be 3 options, each following the same structure but different activities
-                        - Prioritize options that meet multiple preferences criteria
                         - Search for occasional events on that specific day on EventBride or the internet
                         - The activity options must be relevant to the time period availability and make sense in the context
-                        - Choose the best activity options, based on the personality reflected through preferences from a specific entity or more
-                        - Consider meet-ups, periodic events, and anything that can be considered an activity for {theme}
+                        - Consider meet-ups, periodic events, and anything that can be considered an activity for the theme
+                        
+                        ## Communication Style
+                        - When reasoning, use second person addressing, as talking directly with the user
+                        - The reasoning should be short and clear, not more than a sentence
                         """
             result = await self.client.generate(prompt)
 
@@ -179,22 +187,32 @@ class ClaudeService:
                         }}
 
                         RULES:
+                        
+                        ## User Preferences & Cultural Intelligence
                         - The options must be relevant to the user personality reflected through Qloo recommendations
                         - The Qloo recommendations are just as valuable in selecting the most appropriate option
-                        - The today date must be important for an activity in that city that the user would enjoy based on their taste, and mention the fact that today is happening
-                        - Do not mention the Qloo recommendations as explicit from Qloo, instead treat them as if the user was the one who input them and maybe value them more, 
+                        - Do not mention the Qloo recommendations as explicit from Qloo, instead treat them as if the user were the one who input them and maybe value them more
                         - Based on the User preferences make the option of activity as unique as possible. e.g. 'Because the user likes an X artist, he should listen to their music while visiting a location'
+                        - Prioritize options that meet multiple preferences criteria
+                        - Choose the best activity options, based on the personality reflected through preferences from a specific entity or more
+                        
+                        ## Activity Description Requirements
                         - Make the activity more descriptive and include elements and aspects from the whole 'user_preferences' categories to truly make it unique
                         - The activity description should be detailed and specific, including many elements of what the user actually likes or that are recommended by Qloo to them
-                        - When reasoning, use second person addressing, as talking directly with the user
                         - The description should not be more than one sentence long
-                        - The reasoning should be short and clear, not more than a sentence
-                        - There must be 5 options, each following the same structure but different activities
-                        - Prioritize options that meet multiple preferences criteria
+                        
+                        ## Date & Time Relevance
+                        - The today date must be important for an activity in that city that the user would enjoy based on their taste, and mention the fact that today is happening
                         - The option MUST happen today, on the specified date, otherwise it is not valid
                         - The most relevancy should be to the most important events happening today, {date.today()}
                         - Search for occasional events on that specific day on EventBride or the internet
-                        - Choose the best activity options, based on the personality reflected through preferences from a specific entity or more
+                        
+                        ## Activity Generation Logic
+                        - There must be 5 options, each following the same structure but different activities
+                        
+                        ## Communication Style
+                        - When reasoning, use second person addressing, as talking directly with the user
+                        - The reasoning should be short and clear, not more than a sentence
                         """
             result = await self.client.generate(prompt)
 
