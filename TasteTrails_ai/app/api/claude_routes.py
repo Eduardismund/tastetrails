@@ -100,7 +100,7 @@ async def claude_generate_options_today(request: dict):
             "options": claude_result["data"].get("options", []),
         }
 
-        await redis_cache.set_cache(cache_key, response, ttl_seconds=3600)
+        await redis_cache.set_cache(cache_key, response, ttl_seconds=3600 * 24)
 
         return response
 

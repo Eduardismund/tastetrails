@@ -149,6 +149,9 @@ const ProfilePage: React.FC = () => {
                 setError(data.message || 'Failed to save')
             }
 
+
+
+
             await fetch(`/api/ai/qloo/recommendations`, {
                 method: 'POST',
                 headers: {
@@ -166,6 +169,30 @@ const ProfilePage: React.FC = () => {
                         persons: filteredPersons
                     },
                     limit: 5
+                })
+            });
+
+            const dest_response = await fetch(`/api/backend/itineraries/users/${userId}/destinations`);
+            const dest_data = await dest_response.json();
+
+            await fetch(`/api/ai/claude/generate_options_today`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_preferences: {
+                        artists: filteredArtists,
+                        books: filteredBooks,
+                        movies: filteredMovies,
+                        brands: filteredBrands,
+                        video_games: filteredVideoGames,
+                        tv_shows: filteredTvShows,
+                        podcasts: filteredPodcasts,
+                        persons: filteredPersons
+                    },
+                    itinerary_cities: dest_data.data,
+                    today_date: Date.now().toString()
                 })
             });
         } catch (error) {

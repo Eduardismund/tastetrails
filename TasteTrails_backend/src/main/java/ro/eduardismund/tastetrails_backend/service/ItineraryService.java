@@ -49,6 +49,13 @@ public class ItineraryService {
     }
 
     @Transactional(readOnly = true)
+    public List<String> getAllDestinationsByUserId(UUID userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
+        return itineraryRepository.findAllDestinationsByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
     public List<Itinerary> findUpcomingItineraries(UUID userId) {
         return itineraryRepository.findUpcomingItinerariesByUserId(userId, LocalDate.now());
     }
